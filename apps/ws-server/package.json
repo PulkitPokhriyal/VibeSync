@@ -1,0 +1,26 @@
+{
+  "name": "ws-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm tsc",
+    "dev": "pnpm tsc && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ioredis": "^5.5.0",
+    "redis": "^4.7.0",
+    "uuid": "^11.0.5",
+    "ws": "^8.18.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.13.4",
+    "@types/ws": "^8.5.14"
+  }
+}
