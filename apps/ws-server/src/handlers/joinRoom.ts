@@ -28,8 +28,24 @@ const checkUserExists = async (
 export const handleJoinRoom = async (
   ws: WebSocket,
   payload: joinRoomPayload,
+  userConnections: Map<WebSocket, { username: string; roomId: string }>,
 ) => {
   const { username, roomId, roomType } = payload;
+  if (
+    roomType !== "public" &&
+    roomType !== "private" &&
+    roomType !== "random"
+  ) {
+    ws.send(JSON.stringify({ event: "error", message: "Invalid room type" }));
+    return;
+  }
+  const userInfo = userConnections.get(ws);
+  if (userInfo) {
+    ws.send(
+      JSON.stringify({ event: "error", message: "User already in a room" }),
+    );
+    return;
+  }
   if (roomType === "public") {
     if (!roomId) {
       ws.send(JSON.stringify({ event: "error", message: "Room ID required" }));
@@ -42,6 +58,7 @@ export const handleJoinRoom = async (
     }
     if (await checkUserExists(roomId, username, ws)) return;
     await redis.SADD(`roomUsers:${roomId}`, username);
+    userConnections.set(ws, { username, roomId });
     ws.send(JSON.stringify({ event: "roomJoined", roomType, roomId }));
   } else if (roomType === "private") {
     if (!roomId) {
@@ -55,6 +72,7 @@ export const handleJoinRoom = async (
     }
     await checkUserExists(roomId, username, ws);
     await redis.SADD(`roomUsers:${roomId}`, username);
+    userConnections.set(ws, { username, roomId });
     ws.send(JSON.stringify({ event: "roomJoined", roomType, roomId }));
   } else if (roomType === "random") {
     const roomId = await redis.sRandMember("publicRooms");
@@ -69,12 +87,11 @@ export const handleJoinRoom = async (
     }
     if (await checkUserExists(roomId, username, ws)) return;
     await redis.SADD(`roomUsers:${roomId}`, username);
-    ws.send(
-      JSON.stringify({
-        event: "roomJoined",
-        roomType: "public",
-        roomId: roomId,
-      }),
-    );
+    userConnections.set(ws, { username, roomId });
+    for (const [client, info] of userConnections.entries()) {
+      if (info.roomId === roomId) {
+        client.send(JSON.stringify({ event: "userJoined", username }));
+      }
+    }
   }
 };

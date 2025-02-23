@@ -1,17 +1,13 @@
 import { WebSocket } from "ws";
 import { redis } from "../redis.ts";
 
-type LeaveRoomPayload = {
-  username: string;
-  roomId: string;
-  roomType: "public" | "private";
-};
-
 export const handleLeaveRoom = async (
   ws: WebSocket,
-  payload: LeaveRoomPayload,
+  userConnections: Map<WebSocket, { username: string; roomId: string }>,
 ) => {
-  const { username, roomId, roomType } = payload;
+  const userInfo = userConnections.get(ws);
+  if (!userInfo) return;
+  const { username, roomId } = userInfo;
   const isUserInRoom = await redis.SISMEMBER(`roomUsers:${roomId}`, username);
   if (!isUserInRoom) {
     ws.send(
@@ -23,19 +19,19 @@ export const handleLeaveRoom = async (
     return;
   }
   await redis.SREM(`roomUsers:${roomId}`, username);
+  userConnections.delete(ws);
   const activeUsers = await redis.SMEMBERS(`roomUsers:${roomId}`);
   if (activeUsers.length === 0) {
-    if (roomType === "public") {
+    const isUserInPublicRoom = await redis.SISMEMBER("publicRooms", roomId);
+    if (isUserInPublicRoom) {
       await redis.SREM("publicRooms", roomId);
     } else {
       await redis.SREM("privateRooms", roomId);
     }
   }
-  ws.send(
-    JSON.stringify({
-      event: "userLeft",
-      message: `${username} left the room`,
-      roomId,
-    }),
-  );
+  for (const [client, info] of userConnections.entries()) {
+    if (info.roomId === roomId) {
+      client.send(JSON.stringify({ event: "userLeft", username }));
+    }
+  }
 };
