@@ -15,9 +15,9 @@ export function createWebSocketServer() {
     ws.on("message", async (message) => {
       try {
         const { event, payload } = JSON.parse(message.toString());
-        if (event === "createRoom") {
+        if (event === "create") {
           handleCreateRoom(ws, payload, userConnections);
-        } else if (event === "joinRoom") {
+        } else if (event === "join") {
           handleJoinRoom(ws, payload, userConnections);
         } else if (event === "leaveRoom") {
           handleLeaveRoom(ws, userConnections);

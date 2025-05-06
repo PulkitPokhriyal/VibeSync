@@ -1,11 +1,21 @@
 "use client";
 
-export const Input = () => {
+import { RefObject } from "react";
+
+interface InputProps {
+  placeholder: string;
+  required?: boolean;
+  ref?: RefObject<HTMLInputElement | null>;
+}
+
+export const Input = (props: InputProps) => {
   return (
     <div>
       <input
-        className="w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        placeholder="Enter room id"
+        ref={props.ref}
+        className="border border-black border-solid rounded-md p-1 mb-2 "
+        placeholder={props.placeholder}
+        required={props.required}
       />
     </div>
   );

@@ -90,7 +90,7 @@ export const handleJoinRoom = async (
     userConnections.set(ws, { username, roomId });
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
-        client.send(JSON.stringify({ event: "userJoined", username }));
+        client.send(JSON.stringify({ event: "userJoined", username, roomId }));
       }
     }
   }
