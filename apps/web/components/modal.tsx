@@ -28,7 +28,6 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
           event: type,
           payload: {
             username: username.current?.value,
-            roomId: roomId.current?.value,
             roomType: selected.toLowerCase(),
           },
         });
@@ -37,7 +36,19 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
         console.error("Error try again", e);
       }
     } else {
-      router.push(`/room/${roomId}`);
+      try {
+        await sendSocketMessage({
+          event: type,
+          payload: {
+            username: username.current?.value,
+            roomId: roomId.current?.value,
+            roomType: selected.toLowerCase(),
+          },
+        });
+        router.push(`/room/${roomId.current?.value}`);
+      } catch (e) {
+        console.error("Error try again", e);
+      }
     }
   };
 
