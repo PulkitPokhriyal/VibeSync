@@ -20,6 +20,9 @@ export function connectSocket() {
   socket.onmessage = (message) => {
     console.log("Received:", message.data);
   };
+  socket.addEventListener("message", (event) => {
+    console.log("Event listener received:", event.data);
+  });
 
   return socket;
 }
@@ -31,7 +34,7 @@ export function sendSocketMessage({ event, payload }) {
       const handleMessage = (MessageEvent) => {
         try {
           const data = JSON.parse(MessageEvent.data);
-          if (data.roomId) {
+          if (data) {
             resolve(data);
           } else {
             reject(new Error("No roomId received from the server"));
@@ -39,7 +42,7 @@ export function sendSocketMessage({ event, payload }) {
         } catch (err) {
           reject(new Error("Invalid JSON from server"));
         } finally {
-          socket.removeEventListener("message", handleMessage);
+          socket?.removeEventListener("message", handleMessage);
         }
       };
       socket.addEventListener("message", handleMessage);

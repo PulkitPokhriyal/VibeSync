@@ -1,4 +1,4 @@
-"use-client";
+"use client";
 import { Input } from "@repo/ui/input";
 import { Button } from "@repo/ui/button";
 import { CrossIcon } from "../icons/CrossIcon";
@@ -65,7 +65,7 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
           <Input ref={username} placeholder="Enter Username" />
           {type == "join" &&
           (selected === "Public" || selected === "Private") ? (
-            <Input ref={roomId} placeholder="Enter RoomId" />
+            <Input ref={roomId} placeholder="Enter RoomId" required={true} />
           ) : (
             ""
           )}
