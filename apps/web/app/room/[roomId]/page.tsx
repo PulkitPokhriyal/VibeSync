@@ -7,8 +7,10 @@ import { SendIcon } from "../../../icons/SendIcon";
 import { sendSocketMessage, connectSocket } from "../../../lib/websocket";
 export default function RoomPage({ params }) {
   const sendMessage = useRef<HTMLInputElement>(null);
-  const [messages, setMessages] = useState<string[]>([]);
-
+  const [messages, setMessages] = useState<{ text: string; sender: string }[]>(
+    [],
+  );
+  const [username, setUsername] = useState("");
   const handleSendMessage = async () => {
     try {
       await sendSocketMessage({
@@ -24,19 +26,29 @@ export default function RoomPage({ params }) {
       console.error("Error sending message", err);
     }
   };
-
   useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
+  useEffect(() => {
+    const socket = connectSocket();
+
     function handleMessage(event) {
       const data = JSON.parse(event.data);
-      if (data.event === "chat") {
-        setMessages((prev) => [...prev, data.payload.message]);
+      if (data.message && data.username) {
+        setMessages((prev) => [
+          ...prev,
+          { text: data.message, sender: data.username },
+        ]);
       }
     }
 
-    connectSocket().addEventListener("message", handleMessage);
+    socket.addEventListener("message", handleMessage);
 
     return () => {
-      connectSocket().removeEventListener("message", handleMessage);
+      socket.removeEventListener("message", handleMessage);
     };
   }, []);
 
@@ -56,11 +68,22 @@ export default function RoomPage({ params }) {
           </div>
         </div>
         <div className="border border-blue-900 rounded-lg flex flex-col h-[37.8vw] w-[62vw]">
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-4 py-2">
             {messages.map((msg, index) => (
-              <p key={index}>{msg}</p>
+              <div
+                key={index}
+                className={`m-2 flex flex-col ${msg.sender === username ? "items-end" : "items-start"}`}
+              >
+                <span className="text-xs text-gray-500 mb-1">
+                  {msg.sender === username ? "You" : msg.sender}
+                </span>
+                <p className="border max-w-[30%] bg-white text-black break-words rounded-lg p-2 shadow">
+                  {msg.text}
+                </p>
+              </div>
             ))}
           </div>
+
           <div className="p-4 flex gap-2">
             <Input
               ref={sendMessage}

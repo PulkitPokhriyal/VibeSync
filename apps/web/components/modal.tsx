@@ -16,7 +16,6 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
   const username = useRef<HTMLInputElement>(null);
   const roomId = useRef<HTMLInputElement>(null);
   const router = useRouter();
-
   useEffect(() => {
     connectSocket();
   }, []);
@@ -31,6 +30,10 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
             roomType: selected.toLowerCase(),
           },
         });
+        const name = username.current?.value;
+        if (name) {
+          localStorage.setItem("username", name);
+        }
         router.push(`/room/${getRoomId.roomId}`);
       } catch (e) {
         console.error("Error try again", e);
@@ -45,6 +48,11 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
             roomType: selected.toLowerCase(),
           },
         });
+        const name = username.current?.value;
+        if (name) {
+          localStorage.setItem("username", name);
+        }
+
         router.push(`/room/${roomId.current?.value}`);
       } catch (e) {
         console.error("Error try again", e);

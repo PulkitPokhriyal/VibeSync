@@ -13,7 +13,7 @@ export const handleMessage = (
   if (!userInfo) return;
   const { username, roomId } = userInfo;
   for (const [client, info] of userConnections.entries()) {
-    if (info.roomId === roomId) {
+    if (info.roomId === roomId && info.username) {
       client.send(
         JSON.stringify({
           username,
