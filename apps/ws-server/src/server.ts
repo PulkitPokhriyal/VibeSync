@@ -3,6 +3,7 @@ import { handleCreateRoom } from "./handlers/createRoom.ts";
 import { handleJoinRoom } from "./handlers/joinRoom.ts";
 import { handleLeaveRoom } from "./handlers/leaveRoom.ts";
 import { handleMessage } from "./handlers/messageHandler.ts";
+import { handleUserCount } from "./handlers/userCount.ts";
 export function createWebSocketServer() {
   const wss = new WebSocketServer({ port: 3001 });
 
@@ -23,6 +24,8 @@ export function createWebSocketServer() {
           handleLeaveRoom(ws, userConnections);
         } else if (event === "chat") {
           handleMessage(ws, payload, userConnections);
+        } else if (event === "user_count") {
+          handleUserCount(ws, userConnections);
         }
       } catch (e) {
         ws.send(

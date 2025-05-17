@@ -1,26 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, use } from "react";
 import { Input } from "@repo/ui/input";
 import { Button } from "@repo/ui/button";
 import { SendIcon } from "../../../icons/SendIcon";
 import { sendSocketMessage, connectSocket } from "../../../lib/websocket";
 export default function RoomPage({ params }) {
-  const sendMessage = useRef<HTMLInputElement>(null);
   const [messages, setMessages] = useState<{ text: string; sender: string }[]>(
     [],
   );
+  const [inputMessage, setInputMessage] = useState("");
+  const { roomId } = use(params);
   const [username, setUsername] = useState("");
+  const [count, setCount] = useState(0);
   const handleSendMessage = async () => {
     try {
       await sendSocketMessage({
         event: "chat",
         payload: {
-          message: sendMessage.current?.value,
+          message: inputMessage,
         },
       });
-      if (sendMessage.current) {
-        sendMessage.current.value = "";
+      if (inputMessage) {
+        setInputMessage("");
       }
     } catch (err) {
       console.error("Error sending message", err);
@@ -34,14 +36,29 @@ export default function RoomPage({ params }) {
   }, []);
   useEffect(() => {
     const socket = connectSocket();
-
-    function handleMessage(event) {
+    const fetchUserCount = async () => {
+      await sendSocketMessage({
+        event: "user_count",
+        payload: {},
+      });
+    };
+    fetchUserCount();
+    function handleMessage(event: MessageEvent) {
       const data = JSON.parse(event.data);
-      if (data.message && data.username) {
-        setMessages((prev) => [
-          ...prev,
-          { text: data.message, sender: data.username },
-        ]);
+      if (!data.type) return;
+
+      switch (data.type) {
+        case "chat":
+          setMessages((prev) => [
+            ...prev,
+            { text: data.message, sender: data.username },
+          ]);
+          break;
+        case "user_count":
+          setCount(data.count);
+          break;
+        default:
+          console.warn("Unknown message type:", data.type);
       }
     }
 
@@ -61,7 +78,7 @@ export default function RoomPage({ params }) {
       <div className="border border-blue-900 mx-20 pt-8 rounded-b-lg h-[42vw] flex ">
         <div>
           <div className=" py-2 px-4 border border-blue-900 text-white bg-sky-400 rounded-t-lg mx-10">
-            <p>Total people in Room: 10</p>
+            <p>{`Total people in Room: ${count}`}</p>
           </div>
           <div className="border border-blue-900 mx-10 h-[35vw] w-[20vw] rounded-b-lg ">
             <p className="text-md font-semibold pt-4 pl-4">Music Queue</p>
@@ -86,12 +103,17 @@ export default function RoomPage({ params }) {
 
           <div className="p-4 flex gap-2">
             <Input
-              ref={sendMessage}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
               className="w-[58vw]"
               required={true}
               placeholder="Type a message ...."
             />
-            <button className="pb-1" onClick={handleSendMessage}>
+            <button
+              className="pb-1"
+              onClick={handleSendMessage}
+              disabled={!inputMessage}
+            >
               <SendIcon />
             </button>
           </div>

@@ -1,26 +1,22 @@
+import { redis } from "../redis.ts";
 import { WebSocket } from "ws";
 
-type messagePayload = {
-  message: string;
-};
-
-export const handleMessage = (
+export async function handleUserCount(
   ws: WebSocket,
-  payload: messagePayload,
   userConnections: Map<WebSocket, { username: string; roomId: string }>,
-) => {
+) {
   const userInfo = userConnections.get(ws);
+
   if (!userInfo) return;
-  const { username, roomId } = userInfo;
+  const totalUsers = await redis.sCard(`roomUsers:${userInfo.roomId}`);
   for (const [client, info] of userConnections.entries()) {
-    if (info.roomId === roomId) {
+    if (info.roomId === userInfo.roomId) {
       client.send(
         JSON.stringify({
-          type: "chat",
-          username,
-          message: payload.message,
+          type: "user_count",
+          count: totalUsers,
         }),
       );
     }
   }
-};
+}
