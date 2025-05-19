@@ -37,7 +37,7 @@ export function sendSocketMessage({ event, payload }) {
           if (data) {
             resolve(data);
           } else {
-            reject(new Error("No roomId received from the server"));
+            reject(new Error("Nothing received from the server"));
           }
         } catch (err) {
           reject(new Error("Invalid JSON from server"));

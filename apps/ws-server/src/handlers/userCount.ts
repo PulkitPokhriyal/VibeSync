@@ -13,7 +13,7 @@ export async function handleUserCount(
     if (info.roomId === userInfo.roomId) {
       client.send(
         JSON.stringify({
-          type: "user_count",
+          event: "user_count",
           count: totalUsers,
         }),
       );

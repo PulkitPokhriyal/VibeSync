@@ -1,6 +1,6 @@
 import { WebSocket } from "ws";
 import { redis } from "../redis.ts";
-
+import { handleUserCount } from "./userCount.ts";
 export const handleLeaveRoom = async (
   ws: WebSocket,
   userConnections: Map<WebSocket, { username: string; roomId: string }>,
@@ -19,6 +19,7 @@ export const handleLeaveRoom = async (
     return;
   }
   await redis.SREM(`roomUsers:${roomId}`, username);
+  await handleUserCount(ws, userConnections);
   userConnections.delete(ws);
   const activeUsers = await redis.SMEMBERS(`roomUsers:${roomId}`);
   if (activeUsers.length === 0) {

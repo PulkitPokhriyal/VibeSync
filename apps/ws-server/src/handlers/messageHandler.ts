@@ -16,7 +16,7 @@ export const handleMessage = (
     if (info.roomId === roomId) {
       client.send(
         JSON.stringify({
-          type: "chat",
+          event: "chat",
           username,
           message: payload.message,
         }),
