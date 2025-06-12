@@ -4,6 +4,7 @@ import { handleJoinRoom } from "./handlers/joinRoom.ts";
 import { handleLeaveRoom } from "./handlers/leaveRoom.ts";
 import { handleMessage } from "./handlers/messageHandler.ts";
 import { handleUserCount } from "./handlers/userCount.ts";
+import { handleVoteRequest } from "./handlers/voteRequest.ts";
 export function createWebSocketServer() {
   const wss = new WebSocketServer({ port: 3001 });
 
@@ -26,6 +27,8 @@ export function createWebSocketServer() {
           handleMessage(ws, payload, userConnections);
         } else if (event === "user_count") {
           handleUserCount(ws, userConnections);
+        } else if (event === "vote-request") {
+          handleVoteRequest(ws, payload, userConnections);
         }
       } catch (e) {
         ws.send(

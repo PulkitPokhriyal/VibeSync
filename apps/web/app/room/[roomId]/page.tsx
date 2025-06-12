@@ -7,6 +7,7 @@ import { SendIcon } from "../../../icons/SendIcon";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { LogoutModal } from "../../../components/LogoutModal";
 import { sendSocketMessage, connectSocket } from "../../../lib/websocket";
+import { SpotifyLogic } from "../../../components/SpotifyLogic";
 
 export const fetchUserCount = async () => {
   await sendSocketMessage({
@@ -24,6 +25,7 @@ export default function RoomPage({ params }) {
   const [username, setUsername] = useState([]);
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
+  const [voteRequestData, setVoteRequestData] = useState(null);
 
   const handleSendMessage = async () => {
     try {
@@ -82,7 +84,10 @@ export default function RoomPage({ params }) {
             },
           ]);
           break;
-
+        case "vote-request":
+          setVoteRequestData(data.track);
+          console.log(data.track);
+          break;
         default:
           console.warn("Unknown message type:", data.type);
       }
@@ -111,7 +116,10 @@ export default function RoomPage({ params }) {
             {open && <LogoutModal onClose={() => setOpen(false)} />}
           </div>
           <div className="border border-blue-900 mx-10 h-[35vw] w-[20vw] rounded-b-lg ">
-            <p className="text-md font-semibold pt-4 pl-4">Music Queue</p>
+            <SpotifyLogic
+              voteRequestData={voteRequestData}
+              clearVoteRequestData={() => setVoteRequestData(null)}
+            />
           </div>
         </div>
         <div className="border border-blue-900 rounded-lg flex flex-col h-[37.8vw] w-[62vw]">
