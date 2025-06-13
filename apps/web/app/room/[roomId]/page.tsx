@@ -26,6 +26,7 @@ export default function RoomPage({ params }) {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [voteRequestData, setVoteRequestData] = useState(null);
+  const [musicQueue, setMusicQueue] = useState([]);
 
   const handleSendMessage = async () => {
     try {
@@ -86,7 +87,10 @@ export default function RoomPage({ params }) {
           break;
         case "vote-request":
           setVoteRequestData(data.track);
-          console.log(data.track);
+          break;
+        case "music-queue":
+          const parsedQueue = data.payload.map((item) => JSON.parse(item));
+          setMusicQueue(parsedQueue);
           break;
         default:
           console.warn("Unknown message type:", data.type);
@@ -119,6 +123,7 @@ export default function RoomPage({ params }) {
             <SpotifyLogic
               voteRequestData={voteRequestData}
               clearVoteRequestData={() => setVoteRequestData(null)}
+              musicQueue={musicQueue}
             />
           </div>
         </div>

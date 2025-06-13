@@ -5,6 +5,8 @@ import { handleLeaveRoom } from "./handlers/leaveRoom.ts";
 import { handleMessage } from "./handlers/messageHandler.ts";
 import { handleUserCount } from "./handlers/userCount.ts";
 import { handleVoteRequest } from "./handlers/voteRequest.ts";
+import { handleUpVote } from "./handlers/musicQueue.ts";
+import { Spotifytrack } from "./handlers/voteRequest.ts";
 export function createWebSocketServer() {
   const wss = new WebSocketServer({ port: 3001 });
 
@@ -12,6 +14,8 @@ export function createWebSocketServer() {
     WebSocket,
     { username: string; roomId: string }
   >();
+
+  const voteState = new Map<string, { track: Spotifytrack; votes: number }>();
 
   wss.on("connection", (ws): void => {
     ws.on("message", async (message) => {
@@ -28,7 +32,9 @@ export function createWebSocketServer() {
         } else if (event === "user_count") {
           handleUserCount(ws, userConnections);
         } else if (event === "vote-request") {
-          handleVoteRequest(ws, payload, userConnections);
+          handleVoteRequest(ws, payload, voteState, userConnections);
+        } else if (event === "up-vote") {
+          handleUpVote(ws, userConnections, voteState);
         }
       } catch (e) {
         ws.send(

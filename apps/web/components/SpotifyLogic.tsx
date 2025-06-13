@@ -15,7 +15,11 @@ interface SpotifyTrack {
   };
   artists: { name: string }[];
 }
-export function SpotifyLogic({ voteRequestData, clearVoteRequestData }) {
+export function SpotifyLogic({
+  voteRequestData,
+  clearVoteRequestData,
+  musicQueue = [],
+}) {
   const [results, setResults] = useState<SpotifyTrack[]>([]);
 
   const handleSendMessage = async (track: SpotifyTrack) => {
@@ -23,7 +27,15 @@ export function SpotifyLogic({ voteRequestData, clearVoteRequestData }) {
       await sendSocketMessage({
         event: "vote-request",
         payload: {
-          track,
+          track: {
+            id: track.id,
+            name: track.name,
+            artists: track.artists.map((a) => a.name).join(","),
+            album: {
+              name: track.album.name,
+              image: track.album.images?.[0]?.url,
+            },
+          },
         },
       });
     } catch (err) {
@@ -75,6 +87,29 @@ export function SpotifyLogic({ voteRequestData, clearVoteRequestData }) {
           </li>
         ))}
       </ul>
+      <ul className="mx-3 mt-2">
+        {musicQueue.map((track, index) => (
+          <li
+            key={index}
+            className="text-sm flex mb-3 gap-2 hover:cursor-pointer"
+            onClick={() => {
+              handleSendMessage(track);
+            }}
+          >
+            <Image
+              src={track.track.track?.album?.image}
+              alt={track.track.track.name}
+              width={54}
+              height={54}
+            />
+            <div>
+              <p className="font-semibold">{track.track.track.name}</p>
+              <p>{track.track.track.artists}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+
       {voteRequestData && (
         <VotingModal
           voteRequestData={voteRequestData}
