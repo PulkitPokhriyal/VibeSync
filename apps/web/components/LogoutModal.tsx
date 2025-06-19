@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@repo/ui/button";
-import { sendSocketMessage } from "../lib/websocket";
+import { useSocket } from "../lib/WebSocketContext";
 import { useRouter } from "next/navigation";
 type LogoutModalprops = {
   onClose: () => void;
@@ -8,7 +8,7 @@ type LogoutModalprops = {
 
 export function LogoutModal({ onClose }: LogoutModalprops) {
   const router = useRouter();
-
+  const { sendSocketMessage } = useSocket();
   const handleLeaveroom = async () => {
     try {
       sendSocketMessage({

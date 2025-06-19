@@ -3,10 +3,10 @@ import { Button } from "@repo/ui/button";
 import Image from "next/image";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
-import { sendSocketMessage } from "../lib/websocket";
+import { useSocket } from "../lib/WebSocketContext";
 export function VotingModal({ voteRequestData, onClose }) {
   if (!voteRequestData) return null;
-
+  const { sendSocketMessage } = useSocket();
   const { payload, requestedBy } = voteRequestData;
 
   const handleSendMessage = async () => {

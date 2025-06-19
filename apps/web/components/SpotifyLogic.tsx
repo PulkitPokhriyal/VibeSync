@@ -2,9 +2,9 @@
 
 import { Input } from "@repo/ui/input";
 import { searchTracks } from "../lib/spotify";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { sendSocketMessage } from "../lib/websocket";
+import { useSocket } from "../lib/WebSocketContext.tsx";
 import { VotingModal } from "./VotingModal";
 interface SpotifyTrack {
   id: string;
@@ -21,7 +21,7 @@ export function SpotifyLogic({
   musicQueue = [],
 }) {
   const [results, setResults] = useState<SpotifyTrack[]>([]);
-
+  const { sendSocketMessage } = useSocket();
   const handleSendMessage = async (track: SpotifyTrack) => {
     try {
       await sendSocketMessage({
@@ -42,6 +42,30 @@ export function SpotifyLogic({
       console.error("Error sending message", err);
     }
   };
+  useEffect(() => {
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) return;
+
+      const player = new window.Spotify.Player({
+        name: "VibeSync Player",
+        getOAuthToken: (cb: (token: string) => void) => {
+          cb(token);
+        },
+        volume: 0.8,
+      });
+
+      player.addListener("ready", ({ device_id }: any) => {
+        console.log("Spotify player ready with device ID", device_id);
+      });
+
+      player.addListener("initialization_error", ({ message }: any) => {
+        console.error("Spotify init error:", message);
+      });
+
+      player.connect();
+    };
+  }, []);
 
   const handleChange = async (e) => {
     const query = e.target.value;
@@ -89,13 +113,7 @@ export function SpotifyLogic({
       </ul>
       <ul className="mx-3 mt-2">
         {musicQueue.map((track, index) => (
-          <li
-            key={index}
-            className="text-sm flex mb-3 gap-2 hover:cursor-pointer"
-            onClick={() => {
-              handleSendMessage(track);
-            }}
-          >
+          <li key={index} className="text-sm flex mb-3 gap-2">
             <Image
               src={track.track.track?.album?.image}
               alt={track.track.track.name}

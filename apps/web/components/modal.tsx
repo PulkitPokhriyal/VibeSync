@@ -2,9 +2,10 @@
 import { Input } from "@repo/ui/input";
 import { Button } from "@repo/ui/button";
 import { CrossIcon } from "../icons/CrossIcon";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { connectSocket, sendSocketMessage } from "../lib/websocket";
+import { useSocket } from "../lib/WebSocketContext";
+
 type RoomModalprops = {
   type: "create" | "join";
   onClose: () => void;
@@ -16,9 +17,7 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
   const username = useRef<HTMLInputElement>(null);
   const roomId = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  useEffect(() => {
-    connectSocket();
-  }, []);
+  const { sendSocketMessage } = useSocket();
 
   const handleSubmit = async () => {
     if (type === "create" || selected === "Random") {
@@ -52,7 +51,6 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
         if (name) {
           localStorage.setItem("username", name);
         }
-
         router.push(`/room/${roomId.current?.value}`);
       } catch (e) {
         console.error("Error try again", e);
@@ -82,6 +80,7 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
         <div className="flex gap-2">
           {(type == "create" ? options.slice(0, 2) : options).map((opt) => (
             <button
+              type="button"
               key={opt}
               className={`px-4 py-2 rounded border ${
                 selected === opt

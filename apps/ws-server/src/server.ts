@@ -45,6 +45,9 @@ export function createWebSocketServer() {
     ws.on("close", async (): Promise<void> => {
       console.log("Client disconnected");
       const userInfo = userConnections.get(ws);
+      if (!userInfo) return;
+      const { username, roomId } = userInfo;
+
       if (userInfo) {
         await handleLeaveRoom(ws, userConnections);
       }

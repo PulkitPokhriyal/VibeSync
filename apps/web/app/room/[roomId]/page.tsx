@@ -1,20 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, use } from "react";
+import { useEffect, useState, use } from "react";
 import { Input } from "@repo/ui/input";
-import { Button } from "@repo/ui/button";
 import { SendIcon } from "../../../icons/SendIcon";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { LogoutModal } from "../../../components/LogoutModal";
-import { sendSocketMessage, connectSocket } from "../../../lib/websocket";
 import { SpotifyLogic } from "../../../components/SpotifyLogic";
-
-export const fetchUserCount = async () => {
-  await sendSocketMessage({
-    event: "user_count",
-    payload: {},
-  });
-};
+import { useSocket } from "../../../lib/WebSocketContext";
 
 export default function RoomPage({ params }) {
   const [messages, setMessages] = useState<{ text: string; sender: string }[]>(
@@ -27,17 +19,32 @@ export default function RoomPage({ params }) {
   const [open, setOpen] = useState(false);
   const [voteRequestData, setVoteRequestData] = useState(null);
   const [musicQueue, setMusicQueue] = useState([]);
+  const { sendSocketMessage, socket, isConnected } = useSocket();
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("roomId", roomId);
+    }
+  }, [roomId]);
+
+  const fetchUserCount = async () => {
+    await sendSocketMessage({
+      event: "user_count",
+      payload: {},
+    });
+  };
 
   const handleSendMessage = async () => {
     try {
-      await sendSocketMessage({
-        event: "chat",
-        payload: {
-          message: inputMessage,
-        },
-      });
-      if (inputMessage) {
-        setInputMessage("");
+      if (isConnected) {
+        await sendSocketMessage({
+          event: "chat",
+          payload: {
+            message: inputMessage,
+          },
+        });
+        if (inputMessage) {
+          setInputMessage("");
+        }
       }
     } catch (err) {
       console.error("Error sending message", err);
@@ -50,59 +57,61 @@ export default function RoomPage({ params }) {
     }
   }, []);
   useEffect(() => {
-    const socket = connectSocket();
+    if (isConnected) {
+      fetchUserCount();
+      function handleMessage(event: MessageEvent) {
+        const data = JSON.parse(event.data);
+        if (!data.event) return;
 
-    fetchUserCount();
-    function handleMessage(event: MessageEvent) {
-      const data = JSON.parse(event.data);
-      if (!data.event) return;
-
-      switch (data.event) {
-        case "chat":
-          setMessages((prev) => [
-            ...prev,
-            { text: data.message, sender: data.username },
-          ]);
-          break;
-        case "user_count":
-          setCount(data.count);
-          break;
-        case "userLeft":
-          setMessages((prev) => [
-            ...prev,
-            {
-              text: `${data.username} left the chat`,
-              sender: "system",
-            },
-          ]);
-          break;
-        case "userJoined":
-          setMessages((prev) => [
-            ...prev,
-            {
-              text: `${data.username} joined the chat`,
-              sender: "system",
-            },
-          ]);
-          break;
-        case "vote-request":
-          setVoteRequestData(data.track);
-          break;
-        case "music-queue":
-          const parsedQueue = data.payload.map((item) => JSON.parse(item));
-          setMusicQueue(parsedQueue);
-          break;
-        default:
-          console.warn("Unknown message type:", data.type);
+        switch (data.event) {
+          case "chat":
+            setMessages((prev) => [
+              ...prev,
+              { text: data.message, sender: data.username },
+            ]);
+            break;
+          case "user_count":
+            setCount(data.count);
+            break;
+          case "userLeft":
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `${data.username} left the chat`,
+                sender: "system",
+              },
+            ]);
+            break;
+          case "userJoined":
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `${data.username} joined the chat`,
+                sender: "system",
+              },
+            ]);
+            break;
+          case "vote-request":
+            setVoteRequestData(data.track);
+            break;
+          case "music-queue":
+            const parsedQueue = data.payload
+              .map((item) => JSON.parse(item))
+              .sort((a, b) => b.votes - a.votes);
+            setMusicQueue(parsedQueue);
+            break;
+          default:
+            console.warn("Unknown message type:", data.type);
+        }
       }
+
+      socket?.addEventListener("message", handleMessage);
+
+      return () => {
+        socket?.removeEventListener("message", handleMessage);
+      };
     }
-
-    socket.addEventListener("message", handleMessage);
-
-    return () => {
-      socket.removeEventListener("message", handleMessage);
-    };
-  }, []);
+  }, [isConnected]);
 
   return (
     <div className="h-screen overflow-hidden">

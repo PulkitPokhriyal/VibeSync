@@ -59,7 +59,11 @@ export const handleJoinRoom = async (
     if (await checkUserExists(roomId, username, ws)) return;
     await redis.SADD(`roomUsers:${roomId}`, username);
     userConnections.set(ws, { username, roomId });
-    ws.send(JSON.stringify({ event: "roomJoined", roomType, roomId }));
+    for (const [client, info] of userConnections.entries()) {
+      if (info.roomId === roomId) {
+        client.send(JSON.stringify({ event: "userJoined", username, roomId }));
+      }
+    }
   } else if (roomType === "private") {
     if (!roomId) {
       ws.send(JSON.stringify({ event: "error", message: "Room ID required" }));
@@ -73,7 +77,11 @@ export const handleJoinRoom = async (
     await checkUserExists(roomId, username, ws);
     await redis.SADD(`roomUsers:${roomId}`, username);
     userConnections.set(ws, { username, roomId });
-    ws.send(JSON.stringify({ event: "roomJoined", roomType, roomId }));
+    for (const [client, info] of userConnections.entries()) {
+      if (info.roomId === roomId) {
+        client.send(JSON.stringify({ event: "userJoined", username, roomId }));
+      }
+    }
   } else if (roomType === "random") {
     const roomId = await redis.sRandMember("publicRooms");
     if (!roomId) {
