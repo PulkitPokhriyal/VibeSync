@@ -2,7 +2,7 @@
 import { Input } from "@repo/ui/input";
 import { Button } from "@repo/ui/button";
 import { CrossIcon } from "../icons/CrossIcon";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSocket } from "../lib/WebSocketContext";
 

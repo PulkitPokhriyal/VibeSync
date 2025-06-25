@@ -133,6 +133,7 @@ export default function RoomPage({ params }) {
               voteRequestData={voteRequestData}
               clearVoteRequestData={() => setVoteRequestData(null)}
               musicQueue={musicQueue}
+              setMusicQueue={setMusicQueue}
             />
           </div>
         </div>

@@ -3,7 +3,7 @@ import { CreateRoom } from "../components/CreateRoom";
 import { JoinRoom } from "../components/JoinRoom";
 export default function Home() {
   return (
-    <div className="h-screen overflow-hidden ">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0f0c29] to-[#302b63]  ">
       <div className="flex mt-8 justify-between px-20">
         <h1 className="font-bold text-xl">VIBESYNC</h1>
         <CreateRoom />
@@ -30,7 +30,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <div className="bg-sky-400 w-full h-44 mx-0 flex flex-col justify-center items-center">
+      <div className=" w-full h-44 mx-0 flex flex-col justify-center items-center">
         <p className="text-white text-lg font-medium">
           Find your rhythm with VibeSync
         </p>

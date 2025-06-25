@@ -7,6 +7,7 @@ import { handleUserCount } from "./handlers/userCount.ts";
 import { handleVoteRequest } from "./handlers/voteRequest.ts";
 import { handleUpVote } from "./handlers/musicQueue.ts";
 import { Spotifytrack } from "./handlers/voteRequest.ts";
+import { updateMusicQueue } from "./handlers/updateMusicQueue.ts";
 export function createWebSocketServer() {
   const wss = new WebSocketServer({ port: 3001 });
 
@@ -35,6 +36,8 @@ export function createWebSocketServer() {
           handleVoteRequest(ws, payload, voteState, userConnections);
         } else if (event === "up-vote") {
           handleUpVote(ws, userConnections, voteState);
+        } else if (event === "updateMusicQueue") {
+          updateMusicQueue(payload, userConnections);
         }
       } catch (e) {
         ws.send(

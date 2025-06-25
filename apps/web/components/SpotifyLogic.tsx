@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSocket } from "../lib/WebSocketContext.tsx";
 import { VotingModal } from "./VotingModal";
+import { SpotifyWebPlaySDK } from "./SpotifyWebPlay.tsx";
 interface SpotifyTrack {
   id: string;
   name: string;
@@ -19,6 +20,7 @@ export function SpotifyLogic({
   voteRequestData,
   clearVoteRequestData,
   musicQueue = [],
+  setMusicQueue,
 }) {
   const [results, setResults] = useState<SpotifyTrack[]>([]);
   const { sendSocketMessage } = useSocket();
@@ -42,30 +44,6 @@ export function SpotifyLogic({
       console.error("Error sending message", err);
     }
   };
-  useEffect(() => {
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      const token = localStorage.getItem("access_token");
-      if (!token) return;
-
-      const player = new window.Spotify.Player({
-        name: "VibeSync Player",
-        getOAuthToken: (cb: (token: string) => void) => {
-          cb(token);
-        },
-        volume: 0.8,
-      });
-
-      player.addListener("ready", ({ device_id }: any) => {
-        console.log("Spotify player ready with device ID", device_id);
-      });
-
-      player.addListener("initialization_error", ({ message }: any) => {
-        console.error("Spotify init error:", message);
-      });
-
-      player.connect();
-    };
-  }, []);
 
   const handleChange = async (e) => {
     const query = e.target.value;
@@ -88,6 +66,10 @@ export function SpotifyLogic({
         onChange={handleChange}
         className="ml-3 mt-2"
         placeholder="What do you want to play ?"
+      />
+      <SpotifyWebPlaySDK
+        musicQueue={musicQueue}
+        setMusicQueue={setMusicQueue}
       />
       <ul className="mx-3 mt-2">
         {results.map((track) => (

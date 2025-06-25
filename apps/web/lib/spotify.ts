@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const REDIRECT_URI = "https://d2c3-103-81-214-64.ngrok-free.app/callback";
+const REDIRECT_URI =
+  "https://3a47-2401-4900-8811-8e30-9593-d7f5-849a-60e4.ngrok-free.app/callback";
 export async function getSpotifyAccessToken() {
   const client_id = "a506f57865714751b1bb9c7fc44ad73e";
   const client_secret = "6031ee2368fb4d35aadf2fa7c7666d0c";
