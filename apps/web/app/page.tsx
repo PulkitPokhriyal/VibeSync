@@ -3,38 +3,37 @@ import { CreateRoom } from "../components/CreateRoom";
 import { JoinRoom } from "../components/JoinRoom";
 export default function Home() {
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#0f0c29] to-[#302b63]  ">
-      <div className="flex mt-8 justify-between px-20">
+    <div className="h-screen px-14 pt-4 overflow-hidden bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e]">
+      <div className="flex mt-8 justify-between px-20 text-yellow-300">
         <h1 className="font-bold text-xl">VIBESYNC</h1>
         <CreateRoom />
       </div>
       <div className="flex justify-between px-20">
         <div className="pt-32">
-          <p className="font-bold text-5xl">
+          <p className="font-bold text-5xl text-white">
             <span className="mb-2"> Sync your chat </span> <br /> with music
             vibes
           </p>
-          <p className="pt-2 mb-6 text-gray-600">
+          <p className="pt-2 mb-6 text-gray-300">
             Experience seamless chat synchronization
           </p>
           <JoinRoom />
         </div>
-        <div className="mt-28 relative w-[400px] h-[400px]">
-          <div className="bg-sky-400 h-[260px] w-[400px] rounded-lg -top-7 left-5 absolute object-cover z-0"></div>
+        <div className="pt-2">
           <Image
-            className="rounded-lg absolute top-0 bottom-0 left-0 object-cover z-10"
-            src="/landingpagepic1.png"
+            className="rounded-lg"
+            src="/VibeSync-3d-highres.png"
             alt="Landing Page Image"
             width={400}
-            height={400}
+            height={300}
           />
         </div>
       </div>
-      <div className=" w-full h-44 mx-0 flex flex-col justify-center items-center">
-        <p className="text-white text-lg font-medium">
+      <div className=" w-full pt-8 flex flex-col justify-center items-center">
+        <p className="text-gray-300 text-lg font-medium">
           Find your rhythm with VibeSync
         </p>
-      </div>
+      </div>{" "}
     </div>
   );
 }

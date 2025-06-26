@@ -8,7 +8,7 @@ export const JoinRoom = () => {
 
   return (
     <div>
-      <Button onClick={() => setOpen(true)} variant="primary" size="md">
+      <Button onClick={() => setOpen(true)} variant="secondary" size="md">
         Join Room
       </Button>
       {open && <RoomModal type="join" onClose={() => setOpen(false)} />}
