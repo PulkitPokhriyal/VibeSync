@@ -115,20 +115,20 @@ export default function RoomPage({ params }) {
 
   return (
     <div className="h-screen overflow-hidden">
-      <div className="mt-10 mx-20 border border-blue-900 rounded-t-lg py-2 px-10 bg-sky-400 text-white flex justify-between">
-        <h1 className="font-bold text-xl">VIBESYNC</h1>
+      <div className="mt-10 mx-20 border border-gray-700 rounded-t-lg py-2 px-10 text-white flex justify-between">
+        <h1 className="font-bold text-xl text-yellow-300">VIBESYNC</h1>
         <p>Now Playing</p>
       </div>
-      <div className="border border-blue-900 mx-20 pt-8 rounded-b-lg h-[42vw] flex ">
+      <div className="border border-gray-700 mx-20 pt-8 rounded-b-lg h-[42vw] flex ">
         <div>
-          <div className=" py-2 px-4 border border-blue-900 flex gap-14  text-white bg-sky-400 rounded-t-lg mx-10">
+          <div className=" py-2 px-4 border border-gray-700 flex gap-14  text-white rounded-t-lg mx-10">
             <p>{`Total people in Room: ${count}`}</p>
             <button onClick={() => setOpen(true)}>
               <LogoutIcon sx={{ color: "#b91c1c" }} />
             </button>
             {open && <LogoutModal onClose={() => setOpen(false)} />}
           </div>
-          <div className="border border-blue-900 mx-10 h-[35vw] w-[20vw] rounded-b-lg ">
+          <div className="border border-gray-700 mx-10 h-[35vw] w-[20vw] rounded-b-lg ">
             <SpotifyLogic
               voteRequestData={voteRequestData}
               clearVoteRequestData={() => setVoteRequestData(null)}
@@ -137,7 +137,7 @@ export default function RoomPage({ params }) {
             />
           </div>
         </div>
-        <div className="border border-blue-900 rounded-lg flex flex-col h-[37.8vw] w-[62vw]">
+        <div className="border border-gray-700 rounded-lg flex flex-col h-[37.8vw] w-[62vw]">
           <div className="flex-1 overflow-y-auto px-4 py-2"></div>
           {messages.map((msg, index) =>
             msg.sender === "system" ? (

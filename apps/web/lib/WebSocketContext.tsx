@@ -32,7 +32,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       return;
 
     const socket = new WebSocket(
-      "wss://2a60-2401-4900-8811-8e30-9593-d7f5-849a-60e4.ngrok-free.app",
+      "wss://6d32-2401-4900-8811-8e30-9593-d7f5-849a-60e4.ngrok-free.app",
     );
 
     socket.onopen = () => {

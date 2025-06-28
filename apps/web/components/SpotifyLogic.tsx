@@ -61,7 +61,7 @@ export function SpotifyLogic({
 
   return (
     <div>
-      <p className="text-md font-semibold pt-4 pl-4">Music Queue</p>
+      <p className="text-md font-semibold pt-4 pl-4 text-white">Music Queue</p>
       <Input
         onChange={handleChange}
         className="ml-3 mt-2"
@@ -71,7 +71,7 @@ export function SpotifyLogic({
         musicQueue={musicQueue}
         setMusicQueue={setMusicQueue}
       />
-      <ul className="mx-3 mt-2">
+      <ul className="mx-3 mt-2 text-white">
         {results.map((track) => (
           <li
             key={track.id}
