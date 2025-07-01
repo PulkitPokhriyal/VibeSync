@@ -4,17 +4,25 @@ import Image from "next/image";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
 import { useSocket } from "../lib/WebSocketContext";
+import { useEffect, useState } from "react";
 export function VotingModal({ voteRequestData, onClose }) {
   if (!voteRequestData) return null;
   const { sendSocketMessage } = useSocket();
   const { payload, requestedBy } = voteRequestData;
-
+  const [isDisable, setIsDisable] = useState(false);
   const handleSendMessage = async () => {
     await sendSocketMessage({
       event: "up-vote",
       payload: "",
     });
   };
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onClose();
+      setIsDisable(false);
+    }, 10000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -45,14 +53,22 @@ export function VotingModal({ voteRequestData, onClose }) {
           <Button
             variant="primary"
             size="md"
+            disabled={isDisable}
             onClick={() => {
+              setIsDisable(true);
               handleSendMessage();
-              onClose();
             }}
           >
             <ThumbUpOffAltIcon />
           </Button>
-          <Button variant="secondary" size="md" onClick={onClose}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => {
+              setIsDisable(true);
+            }}
+            disabled={isDisable}
+          >
             <ThumbDownOffAltIcon />
           </Button>
         </div>

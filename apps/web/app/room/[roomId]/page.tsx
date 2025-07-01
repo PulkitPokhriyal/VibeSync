@@ -7,7 +7,8 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { LogoutModal } from "../../../components/LogoutModal";
 import { SpotifyLogic } from "../../../components/SpotifyLogic";
 import { useSocket } from "../../../lib/WebSocketContext";
-
+import Sidebar from "../../../components/Sidebar";
+import { VotingModal } from "../../../components/VotingModal";
 export default function RoomPage({ params }) {
   const [messages, setMessages] = useState<{ text: string; sender: string }[]>(
     [],
@@ -90,6 +91,7 @@ export default function RoomPage({ params }) {
                 sender: "system",
               },
             ]);
+
             break;
           case "vote-request":
             setVoteRequestData(data.track);
@@ -114,49 +116,68 @@ export default function RoomPage({ params }) {
   }, [isConnected]);
 
   return (
-    <div className="h-screen overflow-hidden">
-      <div className="mt-10 mx-20 border border-gray-700 rounded-t-lg py-2 px-10 text-white flex justify-between">
+    <div className="h-screen mx-10 lg:mx-20 overflow-hidden">
+      <div className="mt-10 rounded-lg glassmorphism py-2 px-5 text-white flex justify-between">
         <h1 className="font-bold text-xl text-yellow-300">VIBESYNC</h1>
         <p>Now Playing</p>
       </div>
-      <div className="border border-gray-700 mx-20 pt-8 rounded-b-lg h-[42vw] flex ">
-        <div>
-          <div className=" py-2 px-4 border border-gray-700 flex gap-14  text-white rounded-t-lg mx-10">
-            <p>{`Total people in Room: ${count}`}</p>
+      <div className="pt-8 rounded-lg h-[630px] flex gap-3 justify-between">
+        <Sidebar>
+          <div className="flex flex-col justify-start lg:hidden">
+            <div
+              className=" py-2 px-4 bg-white/10 shadow-lg
+ flex justify-between text-white rounded-lg mb-2"
+            >
+              <p>{`Users in Room: ${count}`}</p>
+              <button onClick={() => setOpen(true)}>
+                <LogoutIcon sx={{ color: "#b91c1c" }} />
+              </button>
+              {open && <LogoutModal onClose={() => setOpen(false)} />}
+            </div>
+            <div className="glassmorphism rounded-lg h-full">
+              <SpotifyLogic
+                voteRequestData={voteRequestData}
+                clearVoteRequestData={() => setVoteRequestData(null)}
+                musicQueue={musicQueue}
+              />
+            </div>
+          </div>
+        </Sidebar>
+        <div className="lg:flex flex-col w-[20vw] justify-start hidden">
+          <div
+            className=" py-2 px-4 bg-white/10 shadow-lg
+ flex justify-between text-white rounded-lg mb-2"
+          >
+            <p>{`Users in Room: ${count}`}</p>
             <button onClick={() => setOpen(true)}>
               <LogoutIcon sx={{ color: "#b91c1c" }} />
             </button>
             {open && <LogoutModal onClose={() => setOpen(false)} />}
           </div>
-          <div className="border border-gray-700 mx-10 h-[35vw] w-[20vw] rounded-b-lg ">
-            <SpotifyLogic
-              voteRequestData={voteRequestData}
-              clearVoteRequestData={() => setVoteRequestData(null)}
-              musicQueue={musicQueue}
-              setMusicQueue={setMusicQueue}
-            />
+          <div className="glassmorphism rounded-lg h-full">
+            <SpotifyLogic musicQueue={musicQueue} />
           </div>
         </div>
-        <div className="border border-gray-700 rounded-lg flex flex-col h-[37.8vw] w-[62vw]">
-          <div className="flex-1 overflow-y-auto px-4 py-2"></div>
+
+        <div className="glassmorphism rounded-lg flex flex-col overflow-y-auto justify-end lg:w-[68vw] w-full">
           {messages.map((msg, index) =>
             msg.sender === "system" ? (
               <div
                 key={index}
-                className="text-center text-sm text-gray-500 my-2"
+                className="text-center text-sm text-gray-300 my-2"
               >
                 {msg.text}
               </div>
             ) : msg.sender === username ? (
               <div key={index} className="m-2 flex flex-col items-end">
-                <span className="text-xs text-gray-500 mb-1">You</span>
+                <span className="text-xs text-gray-300 mb-1">You</span>
                 <p className="border max-w-[30%] bg-white text-black break-words rounded-lg p-2 shadow">
                   {msg.text}
                 </p>
               </div>
             ) : (
               <div key={index} className="m-2 flex flex-col items-start">
-                <span className="text-xs text-gray-500 mb-1">{msg.sender}</span>
+                <span className="text-xs text-gray-300 mb-1">{msg.sender}</span>
                 <p className="border max-w-[30%] bg-white text-black break-words rounded-lg p-2 shadow">
                   {msg.text}
                 </p>
@@ -167,12 +188,12 @@ export default function RoomPage({ params }) {
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              className="w-[58vw]"
+              width="68vw"
               required={true}
               placeholder="Type a message ...."
             />
             <button
-              className="pb-1"
+              className="pb-2"
               onClick={handleSendMessage}
               disabled={!inputMessage}
             >
@@ -181,6 +202,12 @@ export default function RoomPage({ params }) {
           </div>
         </div>
       </div>
+      {voteRequestData && (
+        <VotingModal
+          voteRequestData={voteRequestData}
+          onClose={() => setVoteRequestData(null)}
+        />
+      )}
     </div>
   );
 }

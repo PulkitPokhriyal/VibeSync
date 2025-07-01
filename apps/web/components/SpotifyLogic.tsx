@@ -5,7 +5,6 @@ import { searchTracks } from "../lib/spotify";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSocket } from "../lib/WebSocketContext.tsx";
-import { VotingModal } from "./VotingModal";
 import { SpotifyWebPlaySDK } from "./SpotifyWebPlay.tsx";
 interface SpotifyTrack {
   id: string;
@@ -16,12 +15,7 @@ interface SpotifyTrack {
   };
   artists: { name: string }[];
 }
-export function SpotifyLogic({
-  voteRequestData,
-  clearVoteRequestData,
-  musicQueue = [],
-  setMusicQueue,
-}) {
+export function SpotifyLogic({ musicQueue = [] }) {
   const [results, setResults] = useState<SpotifyTrack[]>([]);
   const { sendSocketMessage } = useSocket();
   const handleSendMessage = async (track: SpotifyTrack) => {
@@ -66,11 +60,9 @@ export function SpotifyLogic({
         onChange={handleChange}
         className="ml-3 mt-2"
         placeholder="What do you want to play ?"
+        width="17vw"
       />
-      <SpotifyWebPlaySDK
-        musicQueue={musicQueue}
-        setMusicQueue={setMusicQueue}
-      />
+      <SpotifyWebPlaySDK musicQueue={musicQueue} searchResults={results} />
       <ul className="mx-3 mt-2 text-white">
         {results.map((track) => (
           <li
@@ -93,7 +85,14 @@ export function SpotifyLogic({
           </li>
         ))}
       </ul>
-      <ul className="mx-3 mt-2">
+      <ul className={results.length > 0 ? "hidden" : "mx-3 mt-2 text-white"}>
+        <p
+          className={
+            musicQueue.length > 0 ? "text-lg font-semibold mb-2" : "hidden"
+          }
+        >
+          Next In Queue
+        </p>
         {musicQueue.map((track, index) => (
           <li key={index} className="text-sm flex mb-3 gap-2">
             <Image
@@ -109,13 +108,6 @@ export function SpotifyLogic({
           </li>
         ))}
       </ul>
-
-      {voteRequestData && (
-        <VotingModal
-          voteRequestData={voteRequestData}
-          onClose={clearVoteRequestData}
-        />
-      )}
     </div>
   );
 }

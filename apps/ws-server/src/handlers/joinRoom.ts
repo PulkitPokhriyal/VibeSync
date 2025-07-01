@@ -31,6 +31,7 @@ export const handleJoinRoom = async (
   userConnections: Map<WebSocket, { username: string; roomId: string }>,
 ) => {
   const { username, roomId, roomType } = payload;
+
   if (
     roomType !== "public" &&
     roomType !== "private" &&
@@ -57,11 +58,20 @@ export const handleJoinRoom = async (
       return;
     }
     if (await checkUserExists(roomId, username, ws)) return;
+    const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
     await redis.SADD(`roomUsers:${roomId}`, username);
     userConnections.set(ws, { username, roomId });
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
         client.send(JSON.stringify({ event: "userJoined", username, roomId }));
+        setTimeout(() => {
+          client.send(
+            JSON.stringify({
+              event: "music-queue",
+              payload: music,
+            }),
+          );
+        }, 2000);
       }
     }
   } else if (roomType === "private") {
@@ -74,16 +84,26 @@ export const handleJoinRoom = async (
       ws.send(JSON.stringify({ event: "error", message: "Room not found" }));
       return;
     }
-    await checkUserExists(roomId, username, ws);
+    if (await checkUserExists(roomId, username, ws)) return;
+    const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
     await redis.SADD(`roomUsers:${roomId}`, username);
     userConnections.set(ws, { username, roomId });
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
         client.send(JSON.stringify({ event: "userJoined", username, roomId }));
+        setTimeout(() => {
+          client.send(
+            JSON.stringify({
+              event: "music-queue",
+              payload: music,
+            }),
+          );
+        }, 2000);
       }
     }
   } else if (roomType === "random") {
     const roomId = await redis.sRandMember("publicRooms");
+    const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
     if (!roomId) {
       ws.send(
         JSON.stringify({
@@ -99,6 +119,14 @@ export const handleJoinRoom = async (
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
         client.send(JSON.stringify({ event: "userJoined", username, roomId }));
+        setTimeout(() => {
+          client.send(
+            JSON.stringify({
+              event: "music-queue",
+              payload: music,
+            }),
+          );
+        }, 1000);
       }
     }
   }

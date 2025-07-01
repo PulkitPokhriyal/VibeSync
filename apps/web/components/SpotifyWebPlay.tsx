@@ -3,6 +3,9 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useSocket } from "../lib/WebSocketContext";
 import Script from "next/script";
+import Image from "next/image";
+import { SpotifyTrack } from "react-spotify-web-playback";
+
 declare global {
   interface Window {
     onSpotifyWebPlaybackSDKReady: () => void;
@@ -12,16 +15,17 @@ declare global {
 
 export function SpotifyWebPlaySDK({
   musicQueue,
-  setMusicQueue,
+  searchResults,
 }: {
   musicQueue: string[];
-  setMusicQueue: React.Dispatch<React.SetStateAction<string[]>>;
+  searchResults: SpotifyTrack[];
 }) {
   const [deviceId, setDeviceId] = useState(null);
   const playerRef = useRef(null);
   const currentTrack = useRef(null);
   const isTrackPlaying = useRef(false);
   const musicQueueRef = useRef(musicQueue);
+  const [trackPlaying, setTrackPlaying] = useState(null);
   const { socket } = useSocket();
   useEffect(() => {
     musicQueueRef.current = musicQueue;
@@ -75,12 +79,13 @@ export function SpotifyWebPlaySDK({
     const playTrack = async () => {
       if (!musicQueueRef.current.length || !deviceId || !player) return;
       if (isTrackPlaying.current) return;
-      currentTrack.current = musicQueueRef.current[0].track.track.id;
+      currentTrack.current = musicQueueRef.current[0].track.track;
+      setTrackPlaying(currentTrack.current);
       try {
         await axios.put(
           `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
           {
-            uris: [`spotify:track:${currentTrack.current}`],
+            uris: [`spotify:track:${currentTrack.current.id}`],
           },
           {
             headers: {
@@ -106,7 +111,7 @@ export function SpotifyWebPlaySDK({
           const { duration } = state;
           setTimeout(() => {
             isTrackPlaying.current = false;
-
+            setTrackPlaying(null);
             playTrack();
           }, duration);
         }, 1000);
@@ -120,6 +125,39 @@ export function SpotifyWebPlaySDK({
 
   return (
     <div>
+      {trackPlaying ? (
+        <div>
+          <p
+            className={
+              searchResults.length > 0
+                ? "hidden"
+                : "text-white mx-3 text-lg font-semibold mb-2"
+            }
+          >
+            Current Track
+          </p>
+          <div
+            className={
+              searchResults.length > 0
+                ? "hidden"
+                : "mx-3 text-sm flex mb-3 gap-2 text-white"
+            }
+          >
+            <Image
+              src={trackPlaying?.album?.image}
+              alt={trackPlaying?.name}
+              width={54}
+              height={54}
+            />
+            <div>
+              <p className="font-semibold">{trackPlaying?.name}</p>
+              <p>{trackPlaying?.artists}</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
       <Script
         src="https://sdk.scdn.co/spotify-player.js"
         strategy="afterInteractive"

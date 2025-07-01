@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .glassmorphism {
+    @apply bg-white/10 shadow-lg rounded-xl;
+  }
+}
