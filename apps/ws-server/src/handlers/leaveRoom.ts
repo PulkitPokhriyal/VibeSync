@@ -29,6 +29,7 @@ export const handleLeaveRoom = async (
     } else {
       await redis.SREM("privateRooms", roomId);
     }
+    await redis.DEL(`musicQueue:${roomId}`);
   }
   for (const [client, info] of userConnections.entries()) {
     if (info.roomId === roomId) {

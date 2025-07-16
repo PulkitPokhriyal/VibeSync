@@ -185,7 +185,29 @@ export function SpotifyWebPlaySDK({
 
     playTrack();
   }, [musicQueue, deviceId]);
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.disconnect();
+      }
 
+      if (deviceId && token) {
+        axios
+          .put(
+            "https://api.spotify.com/v1/me/player/pause",
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          )
+          .catch((err) => console.error("Error pausing on leave:", err));
+      }
+
+      isTrackPlaying.current = false;
+    };
+  }, []);
   return (
     <div>
       {trackPlaying ? (

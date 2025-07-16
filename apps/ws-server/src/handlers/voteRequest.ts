@@ -4,6 +4,7 @@ import { redis } from "../redis.ts";
 export interface Spotifytrack {
   id: string;
   name: string;
+  duration: number;
   album: {
     images: { url: string; height: number; width: number }[];
     name: string;

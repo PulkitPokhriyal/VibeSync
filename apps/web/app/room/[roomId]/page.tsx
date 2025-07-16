@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, use, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
+import React from "react";
 import { Input } from "@repo/ui/input";
 import { SendIcon } from "../../../icons/SendIcon";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -14,7 +15,7 @@ export default function RoomPage({ params }) {
     [],
   );
   const [inputMessage, setInputMessage] = useState("");
-  const { roomId } = use(params);
+  const { roomId } = React.use(params);
   const [username, setUsername] = useState([]);
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);

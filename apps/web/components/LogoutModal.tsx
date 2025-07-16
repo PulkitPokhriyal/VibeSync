@@ -15,6 +15,7 @@ export function LogoutModal({ onClose }: LogoutModalprops) {
         event: "leaveRoom",
         payload: {},
       });
+      localStorage.clear();
       router.push("/");
     } catch (error) {
       console.error("Error sending socket message:", error);

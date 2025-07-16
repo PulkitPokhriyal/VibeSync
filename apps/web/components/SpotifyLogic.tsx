@@ -6,9 +6,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSocket } from "../lib/WebSocketContext.tsx";
 import { SpotifyWebPlaySDK } from "./SpotifyWebPlay.tsx";
+import { duration } from "@mui/material";
 interface SpotifyTrack {
   id: string;
   name: string;
+  duration_ms: number;
   album: {
     images: { url: string; height: number; width: number }[];
     name: string;
@@ -32,6 +34,7 @@ export function SpotifyLogic({ musicQueue = [], currentTrack }) {
           track: {
             id: track.id,
             name: track.name,
+            duration_ms: track.duration_ms,
             artists: track.artists.map((a) => a.name).join(","),
             album: {
               name: track.album.name,
