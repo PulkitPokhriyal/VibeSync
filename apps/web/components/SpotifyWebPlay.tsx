@@ -16,9 +16,11 @@ declare global {
 export function SpotifyWebPlaySDK({
   musicQueue,
   searchResults,
+  nowPlaying,
 }: {
   musicQueue: string[];
   searchResults: SpotifyTrack[];
+  nowPlaying: any;
 }) {
   const [deviceId, setDeviceId] = useState(null);
   const playerRef = useRef(null);
@@ -27,6 +29,59 @@ export function SpotifyWebPlaySDK({
   const musicQueueRef = useRef(musicQueue);
   const [trackPlaying, setTrackPlaying] = useState(null);
   const { socket } = useSocket();
+  const nowPlayingRef = useRef(null);
+  const token = localStorage.getItem("access_token");
+  const player = playerRef.current;
+  const playTrack = async () => {
+    if (
+      !musicQueueRef.current.length ||
+      nowPlayingRef.current ||
+      !deviceId ||
+      !player
+    )
+      return;
+    if (isTrackPlaying.current) return;
+    currentTrack.current = musicQueueRef.current[0].track.track;
+    setTrackPlaying(currentTrack.current);
+    try {
+      await axios.put(
+        `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+        {
+          uris: [`spotify:track:${currentTrack.current.id}`],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      console.log("Track started playing");
+      isTrackPlaying.current = true;
+      socket?.send(
+        JSON.stringify({
+          event: "updateMusicQueue",
+          payload: {
+            musicQueue: musicQueueRef.current[0],
+            roomId: localStorage.getItem("roomId"),
+          },
+        }),
+      );
+
+      setTimeout(async () => {
+        const state = await player.getCurrentState();
+        const { duration } = state;
+        setTimeout(() => {
+          isTrackPlaying.current = false;
+          setTrackPlaying(null);
+          playTrack();
+        }, duration);
+      }, 1000);
+    } catch (err) {
+      console.error("Error playing track:", err);
+    }
+  };
+
   useEffect(() => {
     musicQueueRef.current = musicQueue;
   }, [musicQueue]);
@@ -71,21 +126,32 @@ export function SpotifyWebPlaySDK({
   }, []);
 
   useEffect(() => {
-    const player = playerRef.current;
-
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
-
-    const playTrack = async () => {
-      if (!musicQueueRef.current.length || !deviceId || !player) return;
+    const syncPlaybackForNewUser = async () => {
+      if (!nowPlaying || !deviceId || !player) return;
+      nowPlayingRef.current =
+        typeof nowPlaying === "string" ? JSON.parse(nowPlaying) : nowPlaying;
+      console.log(nowPlayingRef.current);
       if (isTrackPlaying.current) return;
-      currentTrack.current = musicQueueRef.current[0].track.track;
-      setTrackPlaying(currentTrack.current);
+
+      const trackData = nowPlayingRef.current.currentTrack.track?.track;
+      const trackId = trackData?.id;
+      console.log(
+        "Track ID:",
+        nowPlayingRef.current?.currentTrack?.track?.track?.id,
+      );
+      setTrackPlaying(trackData);
+      const startedAt = nowPlayingRef.current.startedAt;
+      const now = Date.now();
+      const position = now - startedAt;
+      console.log("Now:", now);
+      console.log("StartedAt:", startedAt);
+      console.log("Position:", position);
       try {
         await axios.put(
           `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
           {
-            uris: [`spotify:track:${currentTrack.current.id}`],
+            uris: [`spotify:track:${trackId}`],
+            position_ms: position,
           },
           {
             headers: {
@@ -96,29 +162,26 @@ export function SpotifyWebPlaySDK({
         );
         console.log("Track started playing");
         isTrackPlaying.current = true;
-        socket?.send(
-          JSON.stringify({
-            event: "updateMusicQueue",
-            payload: {
-              musicQueue: musicQueueRef.current[0],
-              roomId: localStorage.getItem("roomId"),
-            },
-          }),
-        );
-
+        nowPlayingRef.current = null;
         setTimeout(async () => {
           const state = await player.getCurrentState();
           const { duration } = state;
+          const remaining = duration - position;
           setTimeout(() => {
             isTrackPlaying.current = false;
             setTrackPlaying(null);
             playTrack();
-          }, duration);
+          }, remaining);
         }, 1000);
       } catch (err) {
         console.error("Error playing track:", err);
       }
     };
+    syncPlaybackForNewUser();
+  }, [nowPlaying, deviceId]);
+
+  useEffect(() => {
+    if (!token) return;
 
     playTrack();
   }, [musicQueue, deviceId]);

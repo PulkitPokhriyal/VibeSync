@@ -5,8 +5,15 @@ export async function updateMusicQueue(
   userConnections: Map<WebSocket, { username: string; roomId: string }>,
 ) {
   const { musicQueue, roomId } = payload;
-  await redis.SREM(`musicQueue:${roomId}`, JSON.stringify(musicQueue));
-  const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
+  await redis.LREM(`musicQueue:${roomId}`, 0, JSON.stringify(musicQueue));
+  await redis.set(
+    `currentTrack:${roomId}`,
+    JSON.stringify({
+      currentTrack: musicQueue,
+      startedAt: Date.now(),
+    }),
+  );
+  const music = await redis.LRANGE(`musicQueue:${roomId}`, 0, -1);
   for (const [client, info] of userConnections.entries()) {
     if (info.roomId === roomId) {
       client.send(

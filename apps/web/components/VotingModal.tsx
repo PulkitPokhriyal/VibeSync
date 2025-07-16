@@ -26,7 +26,7 @@ export function VotingModal({ voteRequestData, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-6 w-[90%] max-w-md">
+      <div className="relative bg-white dark:bg-gray-900 rounded-t-2xl shadow-lg p-6 w-[90%] max-w-md">
         <p className="text-center text-sm mb-2 text-gray-500">
           {`${requestedBy} wants to add:`}
         </p>
@@ -71,6 +71,9 @@ export function VotingModal({ voteRequestData, onClose }) {
           >
             <ThumbDownOffAltIcon />
           </Button>
+        </div>
+        <div className="absolute bottom-0 rounded-b-2xl left-0 w-full h-1 bg-gray-300 overflow-hidden rounded-b-md">
+          <div className="h-full bg-blue-700 animate-progress-bar"></div>
         </div>
       </div>
     </div>

@@ -15,11 +15,17 @@ interface SpotifyTrack {
   };
   artists: { name: string }[];
 }
-export function SpotifyLogic({ musicQueue = [] }) {
+export function SpotifyLogic({ musicQueue = [], currentTrack }) {
   const [results, setResults] = useState<SpotifyTrack[]>([]);
   const { sendSocketMessage } = useSocket();
+  const [isDisable, setIsDisable] = useState(false);
   const handleSendMessage = async (track: SpotifyTrack) => {
+    if (isDisable) return;
+    setTimeout(() => {
+      setIsDisable(false);
+    }, 10000);
     try {
+      setIsDisable(true);
       await sendSocketMessage({
         event: "vote-request",
         payload: {
@@ -54,20 +60,24 @@ export function SpotifyLogic({ musicQueue = [] }) {
   };
 
   return (
-    <div>
+    <div className="max-h-[82.5dvh] flex flex-col">
       <p className="text-md font-semibold pt-4 pl-4 text-white">Music Queue</p>
       <Input
         onChange={handleChange}
         className="ml-3 mt-2"
+        width="250px"
         placeholder="What do you want to play ?"
-        width="17vw"
       />
-      <SpotifyWebPlaySDK musicQueue={musicQueue} searchResults={results} />
+      <SpotifyWebPlaySDK
+        musicQueue={musicQueue}
+        searchResults={results}
+        nowPlaying={currentTrack}
+      />
       <ul className="mx-3 mt-2 text-white">
         {results.map((track) => (
           <li
             key={track.id}
-            className="text-sm flex mb-3 gap-2 hover:cursor-pointer"
+            className={`text-sm flex mb-3 gap-2 ${isDisable ? "hover:cursor-not-allowed" : "hover:cursor-pointer"}`}
             onClick={() => {
               handleSendMessage(track);
             }}
@@ -91,22 +101,24 @@ export function SpotifyLogic({ musicQueue = [] }) {
             musicQueue.length > 0 ? "text-lg font-semibold mb-2" : "hidden"
           }
         >
-          Next In Queue
+          Next In Music Queue
         </p>
-        {musicQueue.map((track, index) => (
-          <li key={index} className="text-sm flex mb-3 gap-2">
-            <Image
-              src={track.track.track?.album?.image}
-              alt={track.track.track.name}
-              width={54}
-              height={54}
-            />
-            <div>
-              <p className="font-semibold">{track.track.track.name}</p>
-              <p>{track.track.track.artists}</p>
-            </div>
-          </li>
-        ))}
+        <div className="overflow-y-scroll">
+          {musicQueue.map((track, index) => (
+            <li key={index} className="text-sm flex mb-3 gap-2">
+              <Image
+                src={track.track.track?.album?.image}
+                alt={track.track.track.name}
+                width={54}
+                height={54}
+              />
+              <div>
+                <p className="font-semibold">{track.track.track.name}</p>
+                <p>{track.track.track.artists}</p>
+              </div>
+            </li>
+          ))}
+        </div>
       </ul>
     </div>
   );

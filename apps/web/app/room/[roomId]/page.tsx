@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useRef } from "react";
 import { Input } from "@repo/ui/input";
 import { SendIcon } from "../../../icons/SendIcon";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -21,6 +21,8 @@ export default function RoomPage({ params }) {
   const [voteRequestData, setVoteRequestData] = useState(null);
   const [musicQueue, setMusicQueue] = useState([]);
   const { sendSocketMessage, socket, isConnected } = useSocket();
+  const [currentTrack, setCurrentTrack] = useState(null);
+  const messagesEndRef = useRef(null);
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("roomId", roomId);
@@ -51,6 +53,11 @@ export default function RoomPage({ params }) {
       console.error("Error sending message", err);
     }
   };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) {
@@ -62,6 +69,7 @@ export default function RoomPage({ params }) {
       fetchUserCount();
       function handleMessage(event: MessageEvent) {
         const data = JSON.parse(event.data);
+        console.log(typeof data);
         if (!data.event) return;
 
         switch (data.event) {
@@ -102,6 +110,9 @@ export default function RoomPage({ params }) {
               .sort((a, b) => b.votes - a.votes);
             setMusicQueue(parsedQueue);
             break;
+          case "currentTrack":
+            setCurrentTrack(data.payload);
+            break;
           default:
             console.warn("Unknown message type:", data.type);
         }
@@ -119,9 +130,9 @@ export default function RoomPage({ params }) {
     <div className="h-screen mx-10 lg:mx-20 overflow-hidden">
       <div className="mt-10 rounded-lg glassmorphism py-2 px-5 text-white flex justify-between">
         <h1 className="font-bold text-xl text-yellow-300">VIBESYNC</h1>
-        <p>Now Playing</p>
+        <p>RoomId : {roomId}</p>
       </div>
-      <div className="pt-8 rounded-lg h-[630px] flex gap-3 justify-between">
+      <div className="pt-8 rounded-lg flex h-[82.5dvh] gap-3 justify-between">
         <Sidebar>
           <div className="flex flex-col justify-start lg:hidden">
             <div
@@ -134,16 +145,15 @@ export default function RoomPage({ params }) {
               </button>
               {open && <LogoutModal onClose={() => setOpen(false)} />}
             </div>
-            <div className="glassmorphism rounded-lg h-full">
+            <div className="glassmorphism rounded-lg">
               <SpotifyLogic
-                voteRequestData={voteRequestData}
-                clearVoteRequestData={() => setVoteRequestData(null)}
                 musicQueue={musicQueue}
+                currentTrack={currentTrack}
               />
             </div>
           </div>
         </Sidebar>
-        <div className="lg:flex flex-col w-[20vw] justify-start hidden">
+        <div className="lg:flex flex-col w-[320px] justify-start hidden">
           <div
             className=" py-2 px-4 bg-white/10 shadow-lg
  flex justify-between text-white rounded-lg mb-2"
@@ -154,48 +164,53 @@ export default function RoomPage({ params }) {
             </button>
             {open && <LogoutModal onClose={() => setOpen(false)} />}
           </div>
-          <div className="glassmorphism rounded-lg h-full">
-            <SpotifyLogic musicQueue={musicQueue} />
+          <div className="glassmorphism rounded-lg h-full overflow-hidden">
+            <SpotifyLogic musicQueue={musicQueue} currentTrack={currentTrack} />
           </div>
         </div>
 
-        <div className="glassmorphism rounded-lg flex flex-col overflow-y-auto justify-end lg:w-[68vw] w-full">
-          {messages.map((msg, index) =>
-            msg.sender === "system" ? (
-              <div
-                key={index}
-                className="text-center text-sm text-gray-300 my-2"
-              >
-                {msg.text}
-              </div>
-            ) : msg.sender === username ? (
-              <div key={index} className="m-2 flex flex-col items-end">
-                <span className="text-xs text-gray-300 mb-1">You</span>
-                <p className="border max-w-[30%] bg-white text-black break-words rounded-lg p-2 shadow">
+        <div className="glassmorphism rounded-lg flex flex-col justify-end lg:w-[68vw] w-full">
+          <div className="overflow-y-scroll scroll-smooth">
+            {messages.map((msg, index) =>
+              msg.sender === "system" ? (
+                <div
+                  key={index}
+                  className="text-center text-sm text-gray-300 my-2"
+                >
                   {msg.text}
-                </p>
-              </div>
-            ) : (
-              <div key={index} className="m-2 flex flex-col items-start">
-                <span className="text-xs text-gray-300 mb-1">{msg.sender}</span>
-                <p className="border max-w-[30%] bg-white text-black break-words rounded-lg p-2 shadow">
-                  {msg.text}
-                </p>
-              </div>
-            ),
-          )}
+                </div>
+              ) : msg.sender === username ? (
+                <div key={index} className="m-2 flex flex-col items-end">
+                  <span className="text-xs text-gray-300 mb-1">You</span>
+                  <p className="border max-w-[30%] bg-white text-black break-words rounded-lg p-2 shadow">
+                    {msg.text}
+                  </p>
+                </div>
+              ) : (
+                <div key={index} className="m-2 flex flex-col items-start">
+                  <span className="text-xs text-gray-300 mb-1">
+                    {msg.sender}
+                  </span>
+                  <p className="border max-w-[30%] bg-white text-black break-words rounded-lg p-2 shadow">
+                    {msg.text}
+                  </p>
+                </div>
+              ),
+            )}
+            <div ref={messagesEndRef} />
+          </div>
           <div className="p-4 flex gap-2">
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              width="68vw"
+              width="130vh"
               required={true}
               placeholder="Type a message ...."
             />
             <button
               className="pb-2"
               onClick={handleSendMessage}
-              disabled={!inputMessage}
+              disabled={inputMessage.trim() === ""}
             >
               <SendIcon />
             </button>

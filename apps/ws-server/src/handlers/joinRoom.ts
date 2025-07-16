@@ -40,11 +40,8 @@ export const handleJoinRoom = async (
     ws.send(JSON.stringify({ event: "error", message: "Invalid room type" }));
     return;
   }
-  const userInfo = userConnections.get(ws);
-  if (userInfo) {
-    ws.send(
-      JSON.stringify({ event: "error", message: "User already in a room" }),
-    );
+  if (!username || !username.trim()) {
+    ws.send(JSON.stringify({ event: "error", message: "Username required" }));
     return;
   }
   if (roomType === "public") {
@@ -58,9 +55,19 @@ export const handleJoinRoom = async (
       return;
     }
     if (await checkUserExists(roomId, username, ws)) return;
-    const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
+    const music = await redis.LRANGE(`musicQueue:${roomId}`, 0, -1);
+    const currentTrack = await redis.get(`currentTrack:${roomId}`);
     await redis.SADD(`roomUsers:${roomId}`, username);
     userConnections.set(ws, { username, roomId });
+    setTimeout(() => {
+      ws.send(
+        JSON.stringify({
+          event: "currentTrack",
+          payload: currentTrack,
+        }),
+      );
+    }, 2000);
+
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
         client.send(JSON.stringify({ event: "userJoined", username, roomId }));
@@ -85,9 +92,19 @@ export const handleJoinRoom = async (
       return;
     }
     if (await checkUserExists(roomId, username, ws)) return;
-    const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
+    const music = await redis.LRANGE(`musicQueue:${roomId}`, 0, -1);
+    const currentTrack = await redis.get(`currentTrack:${roomId}`);
     await redis.SADD(`roomUsers:${roomId}`, username);
     userConnections.set(ws, { username, roomId });
+    setTimeout(() => {
+      ws.send(
+        JSON.stringify({
+          event: "currentTrack",
+          payload: currentTrack,
+        }),
+      );
+    }, 2000);
+
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
         client.send(JSON.stringify({ event: "userJoined", username, roomId }));
@@ -103,7 +120,8 @@ export const handleJoinRoom = async (
     }
   } else if (roomType === "random") {
     const roomId = await redis.sRandMember("publicRooms");
-    const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
+    const music = await redis.LRANGE(`musicQueue:${roomId}`, 0, -1);
+    const currentTrack = await redis.get(`currentTrack:${roomId}`);
     if (!roomId) {
       ws.send(
         JSON.stringify({
@@ -116,6 +134,15 @@ export const handleJoinRoom = async (
     if (await checkUserExists(roomId, username, ws)) return;
     await redis.SADD(`roomUsers:${roomId}`, username);
     userConnections.set(ws, { username, roomId });
+    setTimeout(() => {
+      ws.send(
+        JSON.stringify({
+          event: "currentTrack",
+          payload: currentTrack,
+        }),
+      );
+    }, 2000);
+
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
         client.send(JSON.stringify({ event: "userJoined", username, roomId }));

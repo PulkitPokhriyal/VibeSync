@@ -44,10 +44,10 @@ export async function handleVoteRequest(
     const finalVotes = voteState.get(roomId);
     if (!finalVotes) return;
     if (finalVotes && finalVotes.votes >= totalUsers / 2) {
-      await redis.SADD(`musicQueue:${roomId}`, JSON.stringify(finalVotes));
+      await redis.RPUSH(`musicQueue:${roomId}`, JSON.stringify(finalVotes));
     }
     voteState.delete(roomId);
-    const music = await redis.SMEMBERS(`musicQueue:${roomId}`);
+    const music = await redis.LRANGE(`musicQueue:${roomId}`, 0, -1);
     for (const [client, info] of userConnections.entries()) {
       if (info.roomId === roomId) {
         client.send(

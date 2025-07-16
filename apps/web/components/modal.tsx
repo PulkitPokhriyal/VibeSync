@@ -14,6 +14,7 @@ type RoomModalprops = {
 export function RoomModal({ type, onClose }: RoomModalprops) {
   const options = ["Public", "Private", "Random"];
   const [selected, setSelected] = useState("Public");
+  const [error, setError] = useState(null);
   const username = useRef<HTMLInputElement>(null);
   const roomId = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -22,32 +23,46 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
   const handleSubmit = async () => {
     if (type === "create" || selected === "Random") {
       try {
-        const getRoomId = await sendSocketMessage({
+        const response = await sendSocketMessage({
           event: type,
           payload: {
-            username: username.current?.value,
+            username: username.current?.value.trim(),
             roomType: selected.toLowerCase(),
           },
         });
-        const name = username.current?.value;
+        if (response.event === "error") {
+          setError(response.message);
+          setTimeout(() => {
+            setError(null);
+          }, 3000);
+          return;
+        }
+        const name = username.current?.value.trim();
         if (name) {
           localStorage.setItem("username", name);
         }
-        router.push(`/room/${getRoomId.roomId}`);
+        router.push(`/room/${response.roomId}`);
       } catch (e) {
         console.error("Error try again", e);
       }
     } else {
       try {
-        await sendSocketMessage({
+        const response = await sendSocketMessage({
           event: type,
           payload: {
-            username: username.current?.value,
+            username: username.current?.value.trim(),
             roomId: roomId.current?.value,
             roomType: selected.toLowerCase(),
           },
         });
-        const name = username.current?.value;
+        if (response.event === "error") {
+          setError(response.message);
+          setTimeout(() => {
+            setError(null);
+          }, 3000);
+          return;
+        }
+        const name = username.current?.value.trim();
         if (name) {
           localStorage.setItem("username", name);
         }
@@ -107,6 +122,7 @@ export function RoomModal({ type, onClose }: RoomModalprops) {
             Enter
           </Button>
         </div>
+        <p className="text-red-800 font-bold pt-3 truncate">{error}</p>
       </div>
     </div>
   );

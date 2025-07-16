@@ -31,7 +31,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN)
       return;
 
-    const socket = new WebSocket("wss://49c8-103-81-215-225.ngrok-free.app");
+    const socket = new WebSocket("wss://ea14d6281e1e.ngrok-free.app");
 
     socket.onopen = () => {
       console.log("WebSocket connected");
