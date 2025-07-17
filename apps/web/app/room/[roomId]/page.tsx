@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import React from "react";
 import { Input } from "@repo/ui/input";
 import { SendIcon } from "../../../icons/SendIcon";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -10,12 +9,12 @@ import { SpotifyLogic } from "../../../components/SpotifyLogic";
 import { useSocket } from "../../../lib/WebSocketContext";
 import Sidebar from "../../../components/Sidebar";
 import { VotingModal } from "../../../components/VotingModal";
-export default function RoomPage({ params }) {
+export default function RoomPage({ params }: { params: { roomId: string } }) {
   const [messages, setMessages] = useState<{ text: string; sender: string }[]>(
     [],
   );
   const [inputMessage, setInputMessage] = useState("");
-  const { roomId } = React.use(params);
+  const { roomId } = params;
   const [username, setUsername] = useState([]);
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
