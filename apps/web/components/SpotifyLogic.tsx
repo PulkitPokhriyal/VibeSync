@@ -2,11 +2,10 @@
 
 import { Input } from "@repo/ui/input";
 import { searchTracks } from "../lib/spotify";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useSocket } from "../lib/WebSocketContext.tsx";
 import { SpotifyWebPlaySDK } from "./SpotifyWebPlay.tsx";
-import { duration } from "@mui/material";
 interface SpotifyTrack {
   id: string;
   name: string;

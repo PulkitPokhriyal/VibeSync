@@ -26,7 +26,7 @@ export default function RoomPage({
   const [musicQueue, setMusicQueue] = useState([]);
   const { sendSocketMessage, socket, isConnected } = useSocket();
   const [currentTrack, setCurrentTrack] = useState(null);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("roomId", roomId);
