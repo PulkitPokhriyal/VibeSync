@@ -72,7 +72,7 @@ export function VotingModal({ voteRequestData, onClose }) {
             <ThumbDownOffAltIcon />
           </Button>
         </div>
-        <div className="absolute bottom-0 rounded-b-2xl left-0 w-full h-1 bg-gray-300 overflow-hidden rounded-b-md">
+        <div className="absolute bottom-0 rounded-b-2xl left-0 w-full h-1 bg-gray-300 overflow-hidden ">
           <div className="h-full bg-blue-700 animate-progress-bar"></div>
         </div>
       </div>

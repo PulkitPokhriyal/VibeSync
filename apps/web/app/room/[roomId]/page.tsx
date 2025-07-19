@@ -19,7 +19,7 @@ export default function RoomPage({
   );
   const [inputMessage, setInputMessage] = useState("");
   const { roomId } = use(params);
-  const [username, setUsername] = useState([]);
+  const [username, setUsername] = useState<string>("");
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [voteRequestData, setVoteRequestData] = useState(null);
@@ -108,12 +108,13 @@ export default function RoomPage({
           case "vote-request":
             setVoteRequestData(data.track);
             break;
-          case "music-queue":
+          case "music-queue": {
             const parsedQueue = data.payload
-              .map((item) => JSON.parse(item))
+              .map((item: string) => JSON.parse(item))
               .sort((a, b) => b.votes - a.votes);
             setMusicQueue(parsedQueue);
             break;
+          }
           case "currentTrack":
             setCurrentTrack(data.payload);
             break;

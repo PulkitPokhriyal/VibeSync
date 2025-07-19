@@ -73,6 +73,9 @@ importers:
       '@types/react-dom':
         specifier: 19.0.3
         version: 19.0.3(@types/react@19.0.8)
+      '@types/spotify-web-playback-sdk':
+        specifier: ^0.1.19
+        version: 0.1.19
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.21(postcss@8.5.3)

@@ -23,7 +23,7 @@ export function SpotifyWebPlaySDK({
   nowPlaying: any;
 }) {
   const [deviceId, setDeviceId] = useState(null);
-  const playerRef = useRef(null);
+  const playerRef = useRef<Spotify.Player | null>(null);
   const currentTrack = useRef(null);
   const isTrackPlaying = useRef(false);
   const musicQueueRef = useRef(musicQueue);
