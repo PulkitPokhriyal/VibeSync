@@ -1,5 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-export default function Sidebar({ children }) {
+import { useState, useEffect, useRef, ReactNode } from "react";
+interface SidebarProps {
+  children: ReactNode;
+}
+export default function Sidebar({ children }: SidebarProps) {
   const [width, setWidth] = useState(0);
   const isDragging = useRef(false);
 
@@ -12,23 +15,28 @@ export default function Sidebar({ children }) {
   const stopDragging = () => {
     isDragging.current = false;
   };
-
-  const onDragging = (e: MouseEvent) => {
+  const handleMouseMove = (e: MouseEvent) => {
+    onDragging(e.clientX);
+  };
+  const onDragging = (clientX: number) => {
     if (isDragging.current) {
-      const newWidth = Math.min(e.clientX, maxWidth);
+      const newWidth = Math.min(clientX, maxWidth);
       setWidth(newWidth);
     }
   };
   const handleTouchMove = (e: TouchEvent) => {
-    onDragging(e.touches[0].clientX);
+    const touch = e.touches[0];
+    if (touch) {
+      onDragging(touch.clientX);
+    }
   };
   useEffect(() => {
-    window.addEventListener("mousemove", onDragging);
+    window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", stopDragging);
     window.addEventListener("touchmove", handleTouchMove);
     window.addEventListener("touchend", stopDragging);
     return () => {
-      window.removeEventListener("mousemove", onDragging);
+      window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", stopDragging);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", stopDragging);
