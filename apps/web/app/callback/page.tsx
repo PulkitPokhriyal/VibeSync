@@ -16,7 +16,7 @@ export default function Callback() {
       });
     } else {
       window.location.href = "/";
-      alert("Login with Spotify Account to create room");
+      alert("Login with Spotify Account to create or join room");
     }
   }, []);
   return (

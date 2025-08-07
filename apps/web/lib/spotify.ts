@@ -40,7 +40,7 @@ export async function checkIfUserHasPremium(accessToken: string) {
     },
   });
 
-  const { user, isPremium } = response.data;
+  const { isPremium } = response.data;
 
   if (isPremium) {
     localStorage.setItem("premium", "true");
