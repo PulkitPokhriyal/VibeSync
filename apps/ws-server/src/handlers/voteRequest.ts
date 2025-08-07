@@ -34,7 +34,7 @@ export async function handleVoteRequest(
         JSON.stringify({
           event: "vote-request",
           track: {
-            payload,
+            track: payload,
             requestedBy: username,
           },
         }),

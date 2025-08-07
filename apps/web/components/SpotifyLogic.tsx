@@ -6,7 +6,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { useSocket } from "../lib/WebSocketContext.tsx";
 import { SpotifyWebPlaySDK } from "./SpotifyWebPlay.tsx";
-interface SpotifyTrack {
+import { QueueItem } from "../app/room/[roomId]/page.tsx";
+import { NowPlayingData } from "../app/room/[roomId]/page.tsx";
+export interface SpotifyTrack {
   id: string;
   name: string;
   duration_ms: number;
@@ -16,7 +18,13 @@ interface SpotifyTrack {
   };
   artists: { name: string }[];
 }
-export function SpotifyLogic({ musicQueue = [], currentTrack }) {
+export function SpotifyLogic({
+  musicQueue,
+  currentTrack,
+}: {
+  musicQueue: QueueItem[];
+  currentTrack: NowPlayingData | null;
+}) {
   const [results, setResults] = useState<SpotifyTrack[]>([]);
   const { sendSocketMessage } = useSocket();
   const [isDisable, setIsDisable] = useState(false);
@@ -30,15 +38,13 @@ export function SpotifyLogic({ musicQueue = [], currentTrack }) {
       await sendSocketMessage({
         event: "vote-request",
         payload: {
-          track: {
-            id: track.id,
-            name: track.name,
-            duration_ms: track.duration_ms,
-            artists: track.artists.map((a) => a.name).join(","),
-            album: {
-              name: track.album.name,
-              image: track.album.images?.[0]?.url,
-            },
+          id: track.id,
+          name: track.name,
+          duration_ms: track.duration_ms,
+          artists: track.artists.map((a) => a.name).join(","),
+          album: {
+            name: track.album.name,
+            image: track.album.images?.[0]?.url,
           },
         },
       });
@@ -47,7 +53,7 @@ export function SpotifyLogic({ musicQueue = [], currentTrack }) {
     }
   };
 
-  const handleChange = async (e) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     if (query.trim().length === 0) {
       setResults([]);
@@ -84,12 +90,14 @@ export function SpotifyLogic({ musicQueue = [], currentTrack }) {
               handleSendMessage(track);
             }}
           >
-            <Image
-              src={track.album.images?.[0]?.url}
-              alt={track.name}
-              width={54}
-              height={54}
-            />
+            {track.album.images?.[0]?.url && (
+              <Image
+                src={track.album.images?.[0]?.url}
+                alt={track.name}
+                width={54}
+                height={54}
+              />
+            )}
             <div>
               <p className="font-semibold">{track.name}</p>
               <p>{track.artists.map((a) => a.name).join(", ")}</p>
@@ -109,14 +117,14 @@ export function SpotifyLogic({ musicQueue = [], currentTrack }) {
           {musicQueue.map((track, index) => (
             <li key={index} className="text-sm flex mb-3 gap-2">
               <Image
-                src={track.track.track?.album?.image}
-                alt={track.track.track.name}
+                src={track.track?.album?.image}
+                alt={track.track.name}
                 width={54}
                 height={54}
               />
               <div>
-                <p className="font-semibold">{track.track.track.name}</p>
-                <p>{track.track.track.artists}</p>
+                <p className="font-semibold">{track.track.name}</p>
+                <p>{track.track.artists}</p>
               </div>
             </li>
           ))}

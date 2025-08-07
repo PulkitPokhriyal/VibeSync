@@ -4,11 +4,23 @@ import Image from "next/image";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
 import { useSocket } from "../lib/WebSocketContext";
+import { TransformedTrack } from "../app/room/[roomId]/page";
 import { useEffect, useState } from "react";
-export function VotingModal({ voteRequestData, onClose }) {
-  if (!voteRequestData) return null;
+
+type VotingData = {
+  track: TransformedTrack;
+  requestedBy: string;
+};
+
+export function VotingModal({
+  voteRequestData,
+  onClose,
+}: {
+  voteRequestData: VotingData;
+  onClose: () => void;
+}) {
   const { sendSocketMessage } = useSocket();
-  const { payload, requestedBy } = voteRequestData;
+  const { track, requestedBy } = voteRequestData;
   const [isDisable, setIsDisable] = useState(false);
   const handleSendMessage = async () => {
     await sendSocketMessage({
@@ -17,6 +29,7 @@ export function VotingModal({ voteRequestData, onClose }) {
     });
   };
   useEffect(() => {
+    if (!voteRequestData) return;
     const timeout = setTimeout(() => {
       onClose();
       setIsDisable(false);
@@ -33,20 +46,16 @@ export function VotingModal({ voteRequestData, onClose }) {
         <div className="flex justify-center gap-3">
           <div className="text-center mb-4">
             <Image
-              src={payload.track?.album?.image}
-              alt={payload.track?.name || "Track image"}
+              src={track?.album?.image}
+              alt={track?.name || "Track image"}
               width={60}
               height={60}
               className="rounded"
             />
           </div>
           <div>
-            <p className="text-center text-white font-semibold">
-              {payload.track.name}
-            </p>
-            <p className="text-center text-sm text-gray-400">
-              {payload.track.artists}
-            </p>
+            <p className="text-center text-white font-semibold">{track.name}</p>
+            <p className="text-center text-sm text-gray-400">{track.artists}</p>
           </div>
         </div>
         <div className="flex justify-center gap-4">

@@ -9,6 +9,25 @@ import { SpotifyLogic } from "../../../components/SpotifyLogic";
 import { useSocket } from "../../../lib/WebSocketContext";
 import Sidebar from "../../../components/Sidebar";
 import { VotingModal } from "../../../components/VotingModal";
+export type TransformedTrack = {
+  id: string;
+  name: string;
+  duration_ms: number;
+  artists: string;
+  album: {
+    name: string;
+    image: string;
+  };
+};
+export interface QueueItem {
+  track: TransformedTrack;
+  votes: number;
+}
+export interface NowPlayingData {
+  currentTrack: QueueItem;
+  startedAt: number;
+}
+
 export default function RoomPage({
   params,
 }: {
@@ -25,7 +44,7 @@ export default function RoomPage({
   const [voteRequestData, setVoteRequestData] = useState(null);
   const [musicQueue, setMusicQueue] = useState([]);
   const { sendSocketMessage, socket, isConnected } = useSocket();
-  const [currentTrack, setCurrentTrack] = useState(null);
+  const [currentTrack, setCurrentTrack] = useState<NowPlayingData | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -111,7 +130,7 @@ export default function RoomPage({
           case "music-queue": {
             const parsedQueue = data.payload
               .map((item: string) => JSON.parse(item))
-              .sort((a, b) => b.votes - a.votes);
+              .sort((a: QueueItem, b: QueueItem): number => b.votes - a.votes);
             setMusicQueue(parsedQueue);
             break;
           }

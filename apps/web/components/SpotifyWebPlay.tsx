@@ -4,50 +4,54 @@ import { useEffect, useRef, useState } from "react";
 import { useSocket } from "../lib/WebSocketContext";
 import Script from "next/script";
 import Image from "next/image";
-import { SpotifyTrack } from "react-spotify-web-playback";
-
+import { TransformedTrack } from "../app/room/[roomId]/page.tsx";
+import { SpotifyTrack } from "./SpotifyLogic.tsx";
+import { QueueItem } from "../app/room/[roomId]/page.tsx";
+import { NowPlayingData } from "../app/room/[roomId]/page.tsx";
 declare global {
   interface Window {
     onSpotifyWebPlaybackSDKReady: () => void;
-    Spotify: any;
+
+    Spotify: typeof Spotify;
   }
 }
-
 export function SpotifyWebPlaySDK({
   musicQueue,
   searchResults,
   nowPlaying,
 }: {
-  musicQueue: string[];
+  musicQueue: QueueItem[];
   searchResults: SpotifyTrack[];
-  nowPlaying: any;
+  nowPlaying: NowPlayingData | null;
 }) {
-  const [deviceId, setDeviceId] = useState(null);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
   const playerRef = useRef<Spotify.Player | null>(null);
-  const currentTrack = useRef(null);
+  const currentTrack = useRef<TransformedTrack | null>(null);
   const isTrackPlaying = useRef(false);
-  const musicQueueRef = useRef(musicQueue);
-  const [trackPlaying, setTrackPlaying] = useState(null);
+  const musicQueueRef = useRef<QueueItem[]>(musicQueue || []);
+  const [trackPlaying, setTrackPlaying] = useState<TransformedTrack | null>(
+    null,
+  );
   const { socket } = useSocket();
-  const nowPlayingRef = useRef(null);
+  const nowPlayingRef = useRef<NowPlayingData | null>(null);
   const token = localStorage.getItem("access_token");
   const player = playerRef.current;
   const playTrack = async () => {
     if (
-      !musicQueueRef.current.length ||
+      !musicQueueRef.current?.length ||
       nowPlayingRef.current ||
       !deviceId ||
       !player
     )
       return;
     if (isTrackPlaying.current) return;
-    currentTrack.current = musicQueueRef.current[0].track.track;
+    currentTrack.current = musicQueueRef.current[0]?.track ?? null;
     setTrackPlaying(currentTrack.current);
     try {
       await axios.put(
         `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
         {
-          uris: [`spotify:track:${currentTrack.current.id}`],
+          uris: [`spotify:track:${currentTrack.current?.id}`],
         },
         {
           headers: {
@@ -70,6 +74,7 @@ export function SpotifyWebPlaySDK({
 
       setTimeout(async () => {
         const state = await player.getCurrentState();
+        if (!state) return;
         const { duration } = state;
         setTimeout(() => {
           isTrackPlaying.current = false;
@@ -133,19 +138,15 @@ export function SpotifyWebPlaySDK({
       console.log(nowPlayingRef.current);
       if (isTrackPlaying.current) return;
 
-      const trackData = nowPlayingRef.current.currentTrack.track?.track;
+      const trackData = nowPlayingRef.current?.currentTrack?.track ?? null;
       const trackId = trackData?.id;
-      console.log(
-        "Track ID:",
-        nowPlayingRef.current?.currentTrack?.track?.track?.id,
-      );
+      console.log("Track ID:", nowPlayingRef.current?.currentTrack?.track?.id);
       setTrackPlaying(trackData);
-      const startedAt = nowPlayingRef.current.startedAt;
+      const startedAt = nowPlayingRef.current?.startedAt;
       const now = Date.now();
+      if (!startedAt) return;
       const position = now - startedAt;
-      console.log("Now:", now);
-      console.log("StartedAt:", startedAt);
-      console.log("Position:", position);
+
       try {
         await axios.put(
           `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
@@ -165,6 +166,7 @@ export function SpotifyWebPlaySDK({
         nowPlayingRef.current = null;
         setTimeout(async () => {
           const state = await player.getCurrentState();
+          if (!state) return;
           const { duration } = state;
           const remaining = duration - position;
           setTimeout(() => {

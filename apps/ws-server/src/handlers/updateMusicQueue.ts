@@ -5,7 +5,7 @@ export async function updateMusicQueue(
   userConnections: Map<WebSocket, { username: string; roomId: string }>,
 ) {
   const { musicQueue, roomId } = payload;
-  const duration = musicQueue.track.track.duration_ms;
+  const duration = musicQueue.track.duration_ms;
   await redis.LREM(`musicQueue:${roomId}`, 0, JSON.stringify(musicQueue));
   await redis.set(
     `currentTrack:${roomId}`,
