@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const REDIRECT_URI = "https://09c70fb909ac.ngrok-free.app/callback";
+const REDIRECT_URI = "https://vibe-sync-web.vercel.app//callback";
 
 function generateCodeVerifier(length: number) {
   const possible =

@@ -1,7 +1,7 @@
 import { createClient, RedisClientType } from "redis";
 
 export const redis: RedisClientType = createClient({
-  url: "redis://localhost:6379",
+  url: process.env.REDIS_URL,
 });
 
 export async function connectRedis() {
