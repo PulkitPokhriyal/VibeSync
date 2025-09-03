@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useSocket } from "../lib/WebSocketContext.tsx";
 import { SpotifyWebPlaySDK } from "./SpotifyWebPlay.tsx";
 import { QueueItem } from "../app/room/[roomId]/page.tsx";
+import { TransformedTrack } from "../app/room/[roomId]/page.tsx";
 import { NowPlayingData } from "../app/room/[roomId]/page.tsx";
 export interface SpotifyTrack {
   id: string;
@@ -66,9 +67,9 @@ export function SpotifyLogic({
       console.error("Error searching tracks:", error);
     }
   };
-
+  console.log("currentTrack value:", currentTrack);
   return (
-    <div className="max-h-[82.5dvh] flex flex-col">
+    <div className="max-h-[82.5dvh] flex flex-col h-full">
       <p className="text-md font-semibold pt-4 pl-4 text-white">Music Queue</p>
       <Input
         onChange={handleChange}
@@ -106,6 +107,25 @@ export function SpotifyLogic({
         ))}
       </ul>
       <ul className={results.length > 0 ? "hidden" : "mx-3 mt-2 text-white"}>
+        {currentTrack && (
+          <>
+            <p className="text-lg font-semibold mb-2">Now Playing</p>
+            <li className="text-sm flex mb-3 gap-2">
+              <Image
+                src={currentTrack.currentTrack.track.album.image}
+                alt={currentTrack.currentTrack.track.name}
+                width={54}
+                height={54}
+              />
+              <div>
+                <p className="font-semibold">
+                  {currentTrack.currentTrack.track.name}
+                </p>
+                <p>{currentTrack.currentTrack.track.artists}</p>
+              </div>
+            </li>
+          </>
+        )}
         <p
           className={
             musicQueue.length > 0 ? "text-lg font-semibold mb-2" : "hidden"

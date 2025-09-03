@@ -38,6 +38,8 @@ export function createWebSocketServer() {
           handleUpVote(ws, userConnections, voteState);
         } else if (event === "updateMusicQueue") {
           updateMusicQueue(payload, userConnections);
+        } else if (event === "ping") {
+          ws.send(JSON.stringify({ event: "pong", payload: "" }));
         }
       } catch (e) {
         ws.send(
@@ -49,7 +51,6 @@ export function createWebSocketServer() {
       console.log("Client disconnected");
       const userInfo = userConnections.get(ws);
       if (!userInfo) return;
-      const { username, roomId } = userInfo;
 
       if (userInfo) {
         await handleLeaveRoom(ws, userConnections);

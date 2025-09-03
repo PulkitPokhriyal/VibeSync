@@ -8,6 +8,7 @@ interface InputProps {
   ref?: RefObject<HTMLInputElement | null>;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const Input = (props: InputProps) => {
@@ -20,6 +21,7 @@ export const Input = (props: InputProps) => {
         className={`w-full opacity-70 text-black rounded-md p-1 mb-2 ${props.className}`}
         placeholder={props.placeholder}
         required={props.required}
+        onKeyDown={props.onKeyDown}
       />
     </div>
   );

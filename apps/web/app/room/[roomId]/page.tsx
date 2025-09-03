@@ -58,7 +58,28 @@ export default function RoomPage({
       payload: {},
     });
   };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
+    window.history.pushState(null, "", window.location.href);
+
+    const handleBackButton = (event: PopStateEvent) => {
+      event.preventDefault();
+      setOpen(true);
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", handleBackButton);
+
+    return () => {
+      window.removeEventListener("popstate", handleBackButton);
+    };
+  }, []);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
+    }
+  };
   const handleSendMessage = async () => {
     try {
       if (isConnected) {
@@ -87,6 +108,25 @@ export default function RoomPage({
       setUsername(storedUsername);
     }
   }, []);
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const pingInterval = setInterval(async () => {
+      if (isConnected) {
+        try {
+          await sendSocketMessage({
+            event: "ping",
+            payload: "",
+          });
+        } catch (error) {
+          console.error("Failed to send ping:", error);
+        }
+      }
+    }, 30000);
+    return () => {
+      clearInterval(pingInterval);
+    };
+  }, [isConnected, sendSocketMessage]);
   useEffect(() => {
     if (isConnected) {
       fetchUserCount();
@@ -137,6 +177,9 @@ export default function RoomPage({
           case "currentTrack":
             setCurrentTrack(data.payload);
             break;
+          case "pong":
+            console.log("Received pong from the server");
+            break;
           default:
             console.warn("Unknown message type:", data.type);
         }
@@ -169,6 +212,7 @@ export default function RoomPage({
               </button>
               {open && <LogoutModal onClose={() => setOpen(false)} />}
             </div>
+
             <div className="glassmorphism rounded-lg">
               <SpotifyLogic
                 musicQueue={musicQueue}
@@ -228,6 +272,7 @@ export default function RoomPage({
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               width="130vh"
+              onKeyDown={handleKeyDown}
               required={true}
               placeholder="Type a message ...."
             />

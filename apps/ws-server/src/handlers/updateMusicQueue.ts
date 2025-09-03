@@ -17,6 +17,8 @@ export async function updateMusicQueue(
       EX: Math.ceil(duration / 1000),
     },
   );
+  const currentTrackData = await redis.get(`currentTrack:${roomId}`);
+  const currentTrack = currentTrackData ? JSON.parse(currentTrackData) : null;
   const music = await redis.LRANGE(`musicQueue:${roomId}`, 0, -1);
   for (const [client, info] of userConnections.entries()) {
     if (info.roomId === roomId) {
@@ -24,6 +26,12 @@ export async function updateMusicQueue(
         JSON.stringify({
           event: "music-queue",
           payload: music,
+        }),
+      );
+      client.send(
+        JSON.stringify({
+          event: "currentTrack",
+          payload: currentTrack,
         }),
       );
     }
