@@ -34,6 +34,12 @@ export async function updateMusicQueue(
           payload: currentTrack,
         }),
       );
+      setTimeout(() => {
+        JSON.stringify({
+          event: "currentTrack",
+          payload: null,
+        });
+      }, duration);
     }
   }
 }
