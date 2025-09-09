@@ -107,25 +107,6 @@ export function SpotifyLogic({
         ))}
       </ul>
       <ul className={results.length > 0 ? "hidden" : "mx-3 mt-2 text-white"}>
-        {currentTrack && (
-          <>
-            <p className="text-lg font-semibold mb-2">Now Playing</p>
-            <li className="text-sm flex mb-3 gap-2">
-              <Image
-                src={currentTrack.currentTrack.track.album.image}
-                alt={currentTrack.currentTrack.track.name}
-                width={54}
-                height={54}
-              />
-              <div>
-                <p className="font-semibold">
-                  {currentTrack.currentTrack.track.name}
-                </p>
-                <p>{currentTrack.currentTrack.track.artists}</p>
-              </div>
-            </li>
-          </>
-        )}
         <p
           className={
             musicQueue.length > 0 ? "text-lg font-semibold mb-2" : "hidden"

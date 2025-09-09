@@ -9,6 +9,7 @@ import { SpotifyLogic } from "../../../components/SpotifyLogic";
 import { useSocket } from "../../../lib/WebSocketContext";
 import Sidebar from "../../../components/Sidebar";
 import { VotingModal } from "../../../components/VotingModal";
+
 export type TransformedTrack = {
   id: string;
   name: string;
@@ -46,6 +47,7 @@ export default function RoomPage({
   const { sendSocketMessage, socket, isConnected } = useSocket();
   const [currentTrack, setCurrentTrack] = useState<NowPlayingData | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("roomId", roomId);
@@ -199,9 +201,10 @@ export default function RoomPage({
         <h1 className="font-bold text-xl text-yellow-300">VIBESYNC</h1>
         <p>RoomId : {roomId}</p>
       </div>
-      <div className="pt-8 rounded-lg flex h-[82.5dvh] gap-3 justify-between">
+
+      <div className="pt-8 rounded-lg flex h-[82.5dvh] gap-3">
         <Sidebar>
-          <div className="flex flex-col justify-start lg:hidden">
+          <div className="flex flex-col justify-start h-full">
             <div
               className=" py-2 px-4 bg-white/10 shadow-lg
  flex justify-between text-white rounded-lg mb-2"
@@ -210,10 +213,9 @@ export default function RoomPage({
               <button onClick={() => setOpen(true)}>
                 <LogoutIcon sx={{ color: "#b91c1c" }} />
               </button>
-              {open && <LogoutModal onClose={() => setOpen(false)} />}
             </div>
 
-            <div className="glassmorphism rounded-lg">
+            <div className="glassmorphism rounded-lg flex-1 overflow-hidden">
               <SpotifyLogic
                 musicQueue={musicQueue}
                 currentTrack={currentTrack}
@@ -221,23 +223,8 @@ export default function RoomPage({
             </div>
           </div>
         </Sidebar>
-        <div className="lg:flex flex-col w-[320px] justify-start hidden">
-          <div
-            className=" py-2 px-4 bg-white/10 shadow-lg
- flex justify-between text-white rounded-lg mb-2"
-          >
-            <p>{`Users in Room: ${count}`}</p>
-            <button onClick={() => setOpen(true)}>
-              <LogoutIcon sx={{ color: "#b91c1c" }} />
-            </button>
-            {open && <LogoutModal onClose={() => setOpen(false)} />}
-          </div>
-          <div className="glassmorphism rounded-lg h-full overflow-hidden">
-            <SpotifyLogic musicQueue={musicQueue} currentTrack={currentTrack} />
-          </div>
-        </div>
-
-        <div className="glassmorphism rounded-lg flex flex-col justify-end lg:w-[68vw] w-full">
+        {open && <LogoutModal onClose={() => setOpen(false)} />}
+        <div className="glassmorphism rounded-lg flex flex-col justify-end flex-1 w-full">
           <div className="overflow-y-scroll scroll-smooth">
             {messages.map((msg, index) =>
               msg.sender === "system" ? (
@@ -271,7 +258,7 @@ export default function RoomPage({
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              width="130vh"
+              width="calc(100% - 3.5rem)"
               onKeyDown={handleKeyDown}
               required={true}
               placeholder="Type a message ...."

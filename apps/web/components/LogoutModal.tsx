@@ -25,7 +25,7 @@ export function LogoutModal({ onClose }: LogoutModalprops) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-gray-900 rounded-2xl shadow-lg p-6 w-[90%] max-w-md">
-        <p className="text-lg font-semibold text-center mb-6">
+        <p className="text-lg font-semibold text-center text-white mb-6">
           Are you sure you want to leave this room?
         </p>
         <div className="flex justify-center gap-4">

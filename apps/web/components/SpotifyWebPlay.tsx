@@ -133,7 +133,8 @@ export function SpotifyWebPlaySDK({
   useEffect(() => {
     const syncPlaybackForNewUser = async () => {
       if (!nowPlaying || !deviceId || !player) return;
-      nowPlayingRef.current = nowPlaying;
+      nowPlayingRef.current =
+        typeof nowPlaying === "string" ? JSON.parse(nowPlaying) : nowPlaying;
       console.log(nowPlayingRef.current);
       if (isTrackPlaying.current) return;
 
@@ -211,6 +212,39 @@ export function SpotifyWebPlaySDK({
   }, []);
   return (
     <div>
+      {trackPlaying ? (
+        <div>
+          <p
+            className={
+              searchResults.length > 0
+                ? "hidden"
+                : "text-white mx-3 text-lg font-semibold mb-2"
+            }
+          >
+            Current Track
+          </p>
+          <div
+            className={
+              searchResults.length > 0
+                ? "hidden"
+                : "mx-3 text-sm flex mb-3 gap-2 text-white"
+            }
+          >
+            <Image
+              src={trackPlaying?.album?.image}
+              alt={trackPlaying?.name}
+              width={54}
+              height={54}
+            />
+            <div>
+              <p className="font-semibold">{trackPlaying?.name}</p>
+              <p>{trackPlaying?.artists}</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
       <Script
         src="https://sdk.scdn.co/spotify-player.js"
         strategy="afterInteractive"

@@ -28,20 +28,6 @@ export async function updateMusicQueue(
           payload: music,
         }),
       );
-      client.send(
-        JSON.stringify({
-          event: "currentTrack",
-          payload: currentTrack,
-        }),
-      );
-      setTimeout(() => {
-        client.send(
-          JSON.stringify({
-            event: "currentTrack",
-            payload: null,
-          }),
-        );
-      }, duration);
     }
   }
 }

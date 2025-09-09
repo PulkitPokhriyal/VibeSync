@@ -9,13 +9,15 @@ export default function Sidebar({ children }: SidebarProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const maxWidth = 300;
-
   const openSidebar = () => {
     setIsOpen(true);
   };
 
   const closeSidebar = () => {
-    setIsOpen(false);
+    // Only allow closing on mobile
+    if (window.innerWidth < 1024) {
+      setIsOpen(false);
+    }
   };
 
   const handleTouchStart = (e: TouchEvent) => {
@@ -41,7 +43,7 @@ export default function Sidebar({ children }: SidebarProps) {
     isDragging.current = false;
   };
   const handleMouseDown = (e: MouseEvent) => {
-    if (e.clientX < 50) {
+    if (window.innerWidth < 1024 && e.clientX < 50) {
       isDragging.current = true;
     }
   };
@@ -57,7 +59,9 @@ export default function Sidebar({ children }: SidebarProps) {
     isDragging.current = false;
   };
   const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-    if (isDragging.current || !isOpen) return;
+    if (window.innerWidth >= 1024 || isDragging.current || !isOpen) {
+      return;
+    }
     if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
       closeSidebar();
     }
@@ -83,17 +87,37 @@ export default function Sidebar({ children }: SidebarProps) {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <>
       <div
         ref={sidebarRef}
-        className={`fixed top-0 left-0 h-full bg-gray-800 text-white shadow-lg z-50 overflow-y-auto transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`
+          h-full text-white shadow-lg z-50 overflow-y-auto 
+          transition-transform duration-300 flex-shrink-0
+          fixed top-0 left-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:static lg:translate-x-0 lg:z-auto lg:rounded-lg
+          bg-gray-800
+          lg:glassmorphism
+        `}
         style={{ width: maxWidth }}
       >
         <div className="p-4 h-full overflow-y-auto">{children}</div>
       </div>
+
       <div
         className="fixed top-0 left-0 h-full w-2 bg-blue-500 z-50 lg:hidden cursor-ew-resize"
         onClick={openSidebar}
@@ -101,7 +125,7 @@ export default function Sidebar({ children }: SidebarProps) {
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={closeSidebar}
         />
       )}
